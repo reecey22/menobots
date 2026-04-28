@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MenoCareBot — Interactive Prototype</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #f0ede8; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 24px; }
+h1 { font-size: 12px; color: #aaa; margin-bottom: 20px; letter-spacing: 0.06em; font-weight: 400; }
+.phone { background: #ffffff; border: 0.5px solid #ddd; border-radius: 44px; width: 290px; height: 600px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 24px 64px rgba(0,0,0,0.13); }
+.status { display: flex; justify-content: space-between; font-size: 11px; color: #bbb; padding: 14px 20px 4px; flex-shrink: 0; }
+.screen { display: none; flex-direction: column; flex: 1; overflow: hidden; }
+.screen.active { display: flex; }
+.body { flex: 1; overflow-y: auto; padding: 12px 18px 10px; }
+.body::-webkit-scrollbar { display: none; }
+.bnav { display: flex; border-top: 0.5px solid #eee; flex-shrink: 0; background: #fff; }
+.bn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 2px 13px; font-size: 10px; color: #bbb; background: none; border: none; cursor: pointer; font-family: inherit; transition: color 0.15s; }
+.bn.on { color: #1D9E75; }
+.bni { font-size: 18px; line-height: 1.2; }
+.ttl { font-size: 18px; font-weight: 500; color: #1a1a1a; margin-bottom: 4px; }
+.sub { font-size: 12px; color: #888; line-height: 1.5; margin-bottom: 14px; }
+.card { background: #f5f5f3; border-radius: 12px; padding: 12px 14px; margin-bottom: 9px; }
+.av { border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 500; flex-shrink: 0; }
+.pname { font-size: 12px; font-weight: 500; color: #1a1a1a; }
+.pmeta { font-size: 10px; color: #bbb; }
+.ptext { font-size: 12px; color: #1a1a1a; line-height: 1.5; margin: 5px 0; }
+.rxn { font-size: 11px; color: #888; background: #fff; border: 0.5px solid #e8e8e8; border-radius: 20px; padding: 3px 10px; cursor: pointer; }
+.gbtn { background: #1D9E75; color: #fff; border: none; border-radius: 12px; padding: 13px; font-size: 13px; font-weight: 500; width: 100%; cursor: pointer; margin-top: 8px; font-family: inherit; transition: opacity 0.15s; }
+.gbtn:hover { opacity: 0.88; }
+.gbtn-sm { background: #1D9E75; color: #fff; border: none; border-radius: 10px; padding: 9px 14px; font-size: 12px; font-weight: 500; cursor: pointer; font-family: inherit; transition: opacity 0.15s; white-space: nowrap; }
+.gbtn-sm:hover { opacity: 0.88; }
+.bbtn { background: #185FA5; color: #fff; border: none; border-radius: 12px; padding: 13px; font-size: 13px; font-weight: 500; width: 100%; cursor: pointer; margin-top: 8px; font-family: inherit; }
+.obtn { background: none; color: #888; border: 0.5px solid #ddd; border-radius: 12px; padding: 13px; font-size: 13px; font-weight: 500; width: 100%; cursor: pointer; margin-top: 8px; font-family: inherit; }
+.obtn-sm { background: none; color: #1D9E75; border: 0.5px solid #1D9E75; border-radius: 10px; padding: 9px 14px; font-size: 12px; font-weight: 500; cursor: pointer; font-family: inherit; white-space: nowrap; }
+.navlist { display: flex; flex-direction: column; gap: 3px; margin-bottom: 14px; }
+.ni { display: flex; align-items: center; gap: 9px; padding: 10px 12px; border-radius: 12px; font-size: 13px; color: #888; cursor: pointer; transition: background 0.12s; }
+.ni:hover { background: #f5f5f3; }
+.ni.on { background: #EAF3DE; color: #1D9E75; font-weight: 500; }
+.ndot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+.hgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+.htile { border-radius: 12px; padding: 12px; cursor: pointer; transition: opacity 0.15s; }
+.htile:hover { opacity: 0.85; }
+.htile-lbl { font-size: 11px; font-weight: 500; margin-bottom: 3px; }
+.htile-lnk { font-size: 11px; opacity: 0.8; }
+.divr { height: 0.5px; background: #eee; margin: 12px 0; }
+.tag { font-size: 10px; padding: 2px 9px; border-radius: 20px; display: inline-block; margin-top: 5px; }
+.members { display: flex; align-items: center; gap: 4px; margin-bottom: 12px; }
+.spl { font-size: 10px; font-weight: 500; padding: 3px 11px; border-radius: 20px; background: #f0ede8; color: #aaa; display: inline-block; margin-bottom: 12px; }
+.yin { font-size: 11px; font-weight: 500; padding: 3px 11px; border-radius: 20px; background: #EAF3DE; color: #1D9E75; display: inline-block; margin-bottom: 12px; }
+.opt { border: 0.5px solid #e5e5e5; border-radius: 12px; padding: 11px 13px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.15s; }
+.opt.sel { border-color: #1D9E75; background: #EAF3DE; }
+.chk { width: 18px; height: 18px; border-radius: 50%; border: 0.5px solid #ccc; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+.chk.on { background: #1D9E75; border-color: #1D9E75; }
+.cdot { width: 8px; height: 8px; background: white; border-radius: 50%; }
+.ol { font-size: 12px; color: #1a1a1a; }
+.opt.sel .ol { color: #1D9E75; font-weight: 500; }
+.gp { border: 0.5px solid #e5e5e5; border-radius: 14px; padding: 13px 14px; margin-bottom: 9px; cursor: pointer; transition: all 0.15s; }
+.gp:hover { border-color: #1D9E75; }
+.gp.sel { border-color: #1D9E75; background: #EAF3DE; }
+.gptop { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.gpn { font-size: 13px; font-weight: 500; color: #1a1a1a; }
+.gp.sel .gpn { color: #1D9E75; }
+.gpc { font-size: 10px; color: #bbb; }
+.gpd { font-size: 11px; color: #888; line-height: 1.4; }
+.rad { width: 18px; height: 18px; border-radius: 50%; border: 0.5px solid #ccc; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+.rad.on { background: #1D9E75; border-color: #1D9E75; }
+.drc { display: flex; align-items: center; gap: 10px; padding: 11px 13px; background: #f5f5f3; border-radius: 12px; margin-bottom: 9px; }
+.fc { background: #f5f5f3; border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: flex-start; cursor: pointer; transition: background 0.12s; }
+.fc:hover { background: #eeebe6; }
+.fq { font-size: 11px; font-weight: 500; color: #185FA5; margin-bottom: 3px; }
+.fa { font-size: 11px; color: #888; line-height: 1.4; }
+.fexp { font-size: 11px; color: #1a1a1a; line-height: 1.5; margin-top: 8px; padding-top: 8px; border-top: 0.5px solid #ddd; display: none; }
+.fc.open .fexp { display: block; }
+.chev { font-size: 15px; color: #bbb; flex-shrink: 0; margin-left: 6px; margin-top: 1px; transition: transform 0.2s; display: inline-block; }
+.fc.open .chev { transform: rotate(90deg); }
+
+/* My groups list item */
+.mygroup { background: #f5f5f3; border-radius: 14px; padding: 13px 14px; margin-bottom: 9px; cursor: pointer; transition: background 0.12s; display: flex; align-items: center; gap: 12px; }
+.mygroup:hover { background: #eeebe6; }
+.mg-icon { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.mg-name { font-size: 13px; font-weight: 500; color: #1a1a1a; margin-bottom: 2px; }
+.mg-meta { font-size: 11px; color: #888; }
+.mg-unread { background: #1D9E75; color: white; border-radius: 20px; font-size: 10px; font-weight: 500; padding: 2px 7px; margin-left: auto; flex-shrink: 0; }
+.section-lbl { font-size: 10px; color: #aaa; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 8px; margin-top: 4px; }
+.action-row { display: flex; gap: 8px; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+<h1>MENOCAREBOT — INTERACTIVE PROTOTYPE V2</h1>
+<div class="phone">
+  <div class="status"><span>9:41</span><span>●●●</span></div>
+
+  <!-- HOME -->
+  <div class="screen active" id="s-home">
+    <div class="body">
+      <div style="font-size:16px;font-weight:500;color:#1D9E75;text-align:center;margin:6px 0 18px;letter-spacing:0.01em;">MenoCareBot</div>
+
+      <!-- Welcome card -->
+      <div style="background:linear-gradient(135deg,#EAF3DE,#d4eccc);border-radius:18px;padding:18px 18px 16px;margin-bottom:12px;position:relative;overflow:hidden;">
+        <div style="font-size:15px;font-weight:500;color:#27500A;margin-bottom:5px;">Welcome back 👋</div>
+        <div style="font-size:12px;color:#3B6D11;line-height:1.6;">You're not alone in this journey.<br>Connect, learn, and find support here.</div>
+        <div style="position:absolute;right:-10px;bottom:-14px;font-size:52px;opacity:0.12;pointer-events:none;">🌿</div>
+      </div>
+
+      <!-- Nav tiles -->
+      <div style="display:flex;flex-direction:column;gap:8px;">
+
+        <div onclick="go('groups')" style="background:#E6F1FB;border-radius:16px;padding:15px 16px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;" onmouseover="this.style.opacity=0.85" onmouseout="this.style.opacity=1">
+          <div style="display:flex;align-items:center;gap:13px;">
+            <div style="width:38px;height:38px;border-radius:12px;background:#B5D4F4;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🤝</div>
+            <div>
+              <div style="font-size:13px;font-weight:500;color:#0C447C;">Build community</div>
+              <div style="font-size:11px;color:#185FA5;opacity:0.75;margin-top:2px;">Groups & shared experiences</div>
+            </div>
+          </div>
+          <span style="font-size:18px;color:#185FA5;opacity:0.4;">›</span>
+        </div>
+
+        <div onclick="go('doctor')" style="background:#FAEEDA;border-radius:16px;padding:15px 16px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;" onmouseover="this.style.opacity=0.85" onmouseout="this.style.opacity=1">
+          <div style="display:flex;align-items:center;gap:13px;">
+            <div style="width:38px;height:38px;border-radius:12px;background:#FAC775;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🩺</div>
+            <div>
+              <div style="font-size:13px;font-weight:500;color:#633806;">My doctors</div>
+              <div style="font-size:11px;color:#854F0B;opacity:0.75;margin-top:2px;">Talk to a specialist</div>
+            </div>
+          </div>
+          <span style="font-size:18px;color:#854F0B;opacity:0.4;">›</span>
+        </div>
+
+        <div onclick="go('faq')" style="background:#EEEDFE;border-radius:16px;padding:15px 16px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;" onmouseover="this.style.opacity=0.85" onmouseout="this.style.opacity=1">
+          <div style="display:flex;align-items:center;gap:13px;">
+            <div style="width:38px;height:38px;border-radius:12px;background:#CECBF6;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">💬</div>
+            <div>
+              <div style="font-size:13px;font-weight:500;color:#26215C;">FAQ</div>
+              <div style="font-size:11px;color:#3C3489;opacity:0.75;margin-top:2px;">Common questions answered</div>
+            </div>
+          </div>
+          <span style="font-size:18px;color:#3C3489;opacity:0.4;">›</span>
+        </div>
+
+      </div>
+    </div>
+    <div class="bnav">
+      <button class="bn on" onclick="go('home')"><span class="bni">⌂</span>Home</button>
+      <button class="bn" onclick="go('groups')"><span class="bni">⚇</span>Group</button>
+      <button class="bn" onclick="go('doctor')"><span class="bni">♡</span>Doctor</button>
+      <button class="bn" onclick="go('faq')"><span class="bni">?</span>FAQ</button>
+    </div>
+  </div>
+
+  <!-- GROUPS LANDING -->
+  <div class="screen" id="s-groups">
+    <div class="body">
+      <div class="ttl">Community</div>
+      <div class="sub">Your spaces for shared experience and support.</div>
+
+      <div class="action-row">
+        <button class="gbtn-sm" onclick="go('join1')">+ Join a group</button>
+        <button class="obtn-sm" onclick="go('make-group')">Create a group</button>
+      </div>
+
+      <div class="section-lbl">Your groups</div>
+
+      <div class="mygroup" onclick="go('feed')">
+        <div class="mg-icon" style="background:#EAF3DE;">🌿</div>
+        <div style="flex:1;">
+          <div class="mg-name">Mood & mental health</div>
+          <div class="mg-meta">42 members · Active now</div>
+        </div>
+        <div class="mg-unread">3</div>
+      </div>
+
+      <div class="mygroup" onclick="go('feed2')">
+        <div class="mg-icon" style="background:#FBEAF0;">🌸</div>
+        <div style="flex:1;">
+          <div class="mg-name">South Asian women</div>
+          <div class="mg-meta">28 members · 1h ago</div>
+        </div>
+        <div class="mg-unread">1</div>
+      </div>
+
+      <div class="section-lbl" style="margin-top:16px;">Suggested for you</div>
+
+      <div class="mygroup" style="border: 0.5px solid #e5e5e5; background: #fff;" onclick="go('join1')">
+        <div class="mg-icon" style="background:#FAEEDA;">🌍</div>
+        <div style="flex:1;">
+          <div class="mg-name">Cultural context</div>
+          <div class="mg-meta">19 members · Growing</div>
+        </div>
+        <span style="font-size:11px;color:#1D9E75;margin-left:auto;flex-shrink:0;">Join →</span>
+      </div>
+
+      <div class="mygroup" style="border: 0.5px solid #e5e5e5; background: #fff;" onclick="go('join1')">
+        <div class="mg-icon" style="background:#E6F1FB;">💊</div>
+        <div style="flex:1;">
+          <div class="mg-name">HRT & treatment</div>
+          <div class="mg-meta">35 members · Active</div>
+        </div>
+        <span style="font-size:11px;color:#1D9E75;margin-left:auto;flex-shrink:0;">Join →</span>
+      </div>
+
+    </div>
+    <div class="bnav">
+      <button class="bn" onclick="go('home')"><span class="bni">⌂</span>Home</button>
+      <button class="bn on" onclick="go('groups')"><span class="bni">⚇</span>Group</button>
+      <button class="bn" onclick="go('doctor')"><span class="bni">♡</span>Doctor</button>
+      <button class="bn" onclick="go('faq')"><span class="bni">?</span>FAQ</button>
+    </div>
+  </div>
+
+  <!-- MAKE A GROUP -->
+  <div class="screen" id="s-make-group">
+    <div class="body">
+      <div class="spl">Create a group</div>
+      <div class="ttl">Start a community</div>
+      <div class="sub">Build a space around a topic that matters to you.</div>
+
+      <div style="font-size:12px;font-weight:500;color:#1a1a1a;margin-bottom:6px;">Group name</div>
+      <input type="text" placeholder="e.g. Latinas navigating menopause" style="width:100%;border:0.5px solid #ddd;border-radius:10px;padding:11px 13px;font-size:12px;color:#1a1a1a;font-family:inherit;outline:none;margin-bottom:14px;" />
+
+      <div style="font-size:12px;font-weight:500;color:#1a1a1a;margin-bottom:6px;">Description</div>
+      <textarea placeholder="What is this group for? Who should join?" style="width:100%;border:0.5px solid #ddd;border-radius:10px;padding:11px 13px;font-size:12px;color:#1a1a1a;font-family:inherit;outline:none;resize:none;height:80px;margin-bottom:14px;"></textarea>
+
+      <div style="font-size:12px;font-weight:500;color:#1a1a1a;margin-bottom:8px;">Topic tags</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;">
+        <span class="tag" style="background:#EAF3DE;color:#3B6D11;cursor:pointer;padding:5px 11px;">Mood</span>
+        <span class="tag" style="background:#f5f5f3;color:#888;cursor:pointer;padding:5px 11px;">Culture</span>
+        <span class="tag" style="background:#f5f5f3;color:#888;cursor:pointer;padding:5px 11px;">HRT</span>
+        <span class="tag" style="background:#f5f5f3;color:#888;cursor:pointer;padding:5px 11px;">Family</span>
+        <span class="tag" style="background:#f5f5f3;color:#888;cursor:pointer;padding:5px 11px;">Work</span>
+        <span class="tag" style="background:#f5f5f3;color:#888;cursor:pointer;padding:5px 11px;">Physical</span>
+      </div>
+
+      <button class="gbtn" onclick="go('groups')">Create group</button>
+      <button class="obtn" onclick="go('groups')">Back</button>
+    </div>
+    <div class="bnav">
+      <button class="bn" onclick="go('home')"><span class="bni">⌂</span>Home</button>
+      <button class="bn on" onclick="go('groups')"><span class="bni">⚇</span>Group</button>
+      <button class="bn" onclick="go('doctor')"><span class="bni">♡</span>Doctor</button>
+      <button class="bn" onclick="go('faq')"><span class="bni">?</span>FAQ</button>
+    </div>
+  </div>
+
+  <!-- GROUP FEED (Mood) -->
+  <div class="screen" id="s-feed">
+    <div class="body">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+        <span style="font-size:13px;color:#888;cursor:pointer;" onclick="go('groups')">← Groups</span>
+      </div>
+      <div class="ttl">Mood & mental health</div>
+      <div class="members">
+        <div class="av" style="width:24px;height:24px;font-size:10px;background:#B5D4F4;color:#0C447C;">A</div>
+        <div class="av" style="width:24px;height:24px;font-size:10px;background:#F4C0D1;color:#72243E;">S</div>
+        <div class="av" style="width:24px;height:24px;font-size:10px;background:#C0DD97;color:#3B6D11;">M</div>
+        <div class="av" style="width:24px;height:24px;font-size:10px;background:#FAC775;color:#854F0B;">R</div>
+        <span style="font-size:10px;color:#bbb;margin-left:5px;">+38 others</span>
+      </div>
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <div class="av" style="width:24px;height:24px;font-size:10px;background:#F4C0D1;color:#72243E;">S</div>
+          <div><div class="pname">Sana</div><div class="pmeta">2h ago</div></div>
+        </div>
+        <div class="ptext">"My family didn't believe me. Finding this group helped me explain what I was going through."</div>
+        <div style="display:flex;gap:7px;margin-top:7px;"><span class="rxn">♡ 12</span><span class="rxn">💬 4</span></div>
+      </div>
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <div class="av" style="width:24px;height:24px;font-size:10px;background:#CECBF6;color:#3C3489;">P</div>
+          <div><div class="pname">Priya</div><div class="pmeta">4h ago</div></div>
+        </div>
+        <div class="ptext">"Started a Slack channel at work — more people related than I expected."</div>
+        <div style="display:flex;gap:7px;margin-top:7px;"><span class="rxn">♡ 7</span><span class="rxn">💬 2</span></div>
+      </div>
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <div class="av" style="width:24px;height:24px;font-size:10px;background:#C0DD97;color:#3B6D11;">M</div>
+          <div><div class="pname">Maya</div><div class="pmeta">5h ago</div></div>
+        </div>
+        <div class="ptext">"Low-dose HRT changed everything for me. Don't be afraid to ask your doctor."</div>
+        <div style="display:flex;gap:7px;margin-top:7px;"><span class="rxn">♡ 9</span><span class="rxn">💬 6</span></div>
+      </div>
+      <button class="gbtn">+ Share your experience</button>
+    </div>
+    <div class="bnav">
+      <button class="bn" onclick="go('home')"><span class="bni">⌂</span>Home</button>
+      <button class="bn on" onclick="go('groups')"><span class="bni">⚇</span>Group</button>
+      <button class="bn" onclick="go('doctor')"><span class="bni">♡</span>Doctor</button>
+      <button class="bn" onclick="go('faq')"><span class="bni">?</span>FAQ</button>
+    </div>
+  </div>
+
+  <!-- GROUP FEED 2 (South Asian women) -->
+  <div class="screen" id="s-feed2">
+    <div class="body">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+        <span style="font-size:13px;color:#888;cursor:pointer;" onclick="go('groups')">← Groups</span>
+      </div>
+      <div class="ttl">South Asian women</div>
+      <div class="members">
+        <div class="av" style="width:24px;height:24px;font-size:10px;background:#F4C0D1;color:#72243E;">A</div>
+        <div class="av" style="width:24px;height:24px;font-size:10px;background:#FAC775;color:#854F0B;">D</div>
+        <div class="av" style="width:24px;height:24px;font-size:10px;background:#CECBF6;color:#3C3489;">P</div>
+        <span style="font-size:10px;color:#bbb;margin-left:5px;">+25 others</span>
+      </div>
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <div class="av" style="width:24px;height:24px;font-size:10px;background:#F4C0D1;color:#72243E;">A</div>
+          <div><div class="pname">Ananya</div><div class="pmeta">1h ago</div></div>
+        </div>
+        <div class="ptext">"In my family menopause was never spoken about. I thought something was wrong with me until I found this group."</div>
+        <div style="display:flex;gap:7px;margin-top:7px;"><span class="rxn">♡ 18</span><span class="rxn">💬 9</span></div>
+      </div>
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <div class="av" style="width:24px;height:24px;font-size:10px;background:#CECBF6;color:#3C3489;">P</div>
+          <div><div class="pname">Priya</div><div class="pmeta">3h ago</div></div>
+        </div>
+        <div class="ptext">"My doctor dismissed my symptoms twice. Coming here gave me the language to advocate for myself."</div>
+        <div style="display:flex;gap:7px;margin-top:7px;"><span class="rxn">♡ 14</span><span class="rxn">💬 5</span></div>
+      </div>
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <div class="av" style="width:24px;height:24px;font-size:10px;background:#FAC775;color:#854F0B;">D</div>
+          <div><div class="pname">Deepa</div><div class="pmeta">5h ago</div></div>
+        </div>
+        <div class="ptext">"My mother-in-law said 'just pray more.' This group is the first place I've felt truly understood."</div>
+        <div style="display:flex;gap:7px;margin-top:7px;"><span class="rxn">♡ 22</span><span class="rxn">💬 11</span></div>
+      </div>
+      <button class="gbtn">+ Share your experience</button>
+    </div>
+    <div class="bnav">
+      <button class="bn" onclick="go('home')"><span class="bni">⌂</span>Home</button>
+      <button class="bn on" onclick="go('groups')"><span class="bni">⚇</span>Group</button>
+      <button class="bn" onclick="go('doctor')"><span class="bni">♡</span>Doctor</button>
+      <button class="bn" onclick="go('faq')"><span class="bni">?</span>FAQ</button>
+    </div>
+  </div>
+
+  <!-- JOIN 1: What brings you -->
+  <div class="screen" id="s-join1">
+    <div class="body">
+      <div class="spl">Step 1 of 3</div>
+      <div class="ttl">Join a group</div>
+      <div class="sub">Tell us what matters to you and we'll match you with the right community.</div>
+
+      <div style="margin-bottom:16px;">
+        <div style="font-size:12px;font-weight:500;color:#1a1a1a;margin-bottom:6px;">Find a group</div>
+        <div style="position:relative;">
+          <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;color:#bbb;pointer-events:none;">🔍</span>
+          <input id="group-search" type="text" placeholder="Search by name..." oninput="filterGroups(this.value)" style="width:100%;border:0.5px solid #ddd;border-radius:10px;padding:10px 12px 10px 34px;font-size:12px;color:#1a1a1a;font-family:inherit;outline:none;background:#f9f9f8;" />
+        </div>
+        <div id="search-results" style="display:none;margin-top:6px;border:0.5px solid #e5e5e5;border-radius:10px;overflow:hidden;">
+          <div class="search-result" data-name="Mood &amp; mental health" onclick="go('join2')" style="padding:10px 12px;font-size:12px;color:#1a1a1a;cursor:pointer;border-bottom:0.5px solid #f0f0f0;background:#fff;" onmouseover="this.style.background='#f5f5f3'" onmouseout="this.style.background='#fff'">Mood &amp; mental health <span style="color:#bbb;font-size:11px;">· 42 members</span></div>
+          <div class="search-result" data-name="South Asian women" onclick="go('join2')" style="padding:10px 12px;font-size:12px;color:#1a1a1a;cursor:pointer;border-bottom:0.5px solid #f0f0f0;background:#fff;" onmouseover="this.style.background='#f5f5f3'" onmouseout="this.style.background='#fff'">South Asian women <span style="color:#bbb;font-size:11px;">· 28 members</span></div>
+          <div class="search-result" data-name="Cultural context" onclick="go('join2')" style="padding:10px 12px;font-size:12px;color:#1a1a1a;cursor:pointer;border-bottom:0.5px solid #f0f0f0;background:#fff;" onmouseover="this.style.background='#f5f5f3'" onmouseout="this.style.background='#fff'">Cultural context <span style="color:#bbb;font-size:11px;">· 19 members</span></div>
+          <div class="search-result" data-name="HRT & treatment" onclick="go('join2')" style="padding:10px 12px;font-size:12px;color:#1a1a1a;cursor:pointer;border-bottom:0.5px solid #f0f0f0;background:#fff;" onmouseover="this.style.background='#f5f5f3'" onmouseout="this.style.background='#fff'">HRT &amp; treatment <span style="color:#bbb;font-size:11px;">· 35 members</span></div>
+          <div class="search-result" data-name="Work & daily life" onclick="go('join2')" style="padding:10px 12px;font-size:12px;color:#1a1a1a;cursor:pointer;background:#fff;" onmouseover="this.style.background='#f5f5f3'" onmouseout="this.style.background='#fff'">Work &amp; daily life <span style="color:#bbb;font-size:11px;">· 23 members</span></div>
+        </div>
+      </div>
+
+      <div class="divr"></div>
+
+      <div style="font-size:12px;font-weight:500;color:#1a1a1a;margin-bottom:4px;margin-top:10px;">What brings you here?</div>
+      <div style="font-size:11px;color:#888;margin-bottom:12px;">Select all that apply</div>
+      <div class="opt sel" onclick="tog(this)"><div class="chk on"><div class="cdot"></div></div><div class="ol">Mood & mental health</div></div>
+      <div class="opt sel" onclick="tog(this)"><div class="chk on"><div class="cdot"></div></div><div class="ol">Family understanding</div></div>
+      <div class="opt" onclick="tog(this)"><div class="chk"></div><div class="ol">HRT & medication</div></div>
+      <div class="opt" onclick="tog(this)"><div class="chk"></div><div class="ol">Work & daily life</div></div>
+      <div class="opt" onclick="tog(this)"><div class="chk"></div><div class="ol">Cultural & religious context</div></div>
+      <div class="opt" onclick="tog(this)"><div class="chk"></div><div class="ol">Physical symptoms</div></div>
+      <button class="gbtn" onclick="go('join2')">Continue →</button>
+      <button class="obtn" onclick="go('groups')">Back</button>
+    </div>
+    <div class="bnav">
+      <button class="bn" onclick="go('home')"><span class="bni">⌂</span>Home</button>
+      <button class="bn on" onclick="go('groups')"><span class="bni">⚇</span>Group</button>
+      <button class="bn" onclick="go('doctor')"><span class="bni">♡</span>Doctor</button>
+      <button class="bn" onclick="go('faq')"><span class="bni">?</span>FAQ</button>
+    </div>
+  </div>
+
+  <!-- JOIN 2: Pick a group -->
+  <div class="screen" id="s-join2">
+    <div class="body">
+      <div class="spl">Step 2 of 3</div>
+      <div class="ttl">Choose a group</div>
+      <div class="sub">Pick the community that fits where you are right now.</div>
+      <div class="gp sel" id="gp1" onclick="pick('gp1')">
+        <div class="gptop"><div class="gpn">Mood & mental health</div><div style="display:flex;align-items:center;gap:6px;"><span class="gpc">42 members</span><div class="rad on"><div class="cdot"></div></div></div></div>
+        <div class="gpd">Anxiety, depression, brain fog, and emotional shifts during menopause.</div>
+        <div><span class="tag" style="background:#EAF3DE;color:#3B6D11;">Active</span> <span class="tag" style="background:#E6F1FB;color:#185FA5;">Moderated</span></div>
+      </div>
+      <div class="gp" id="gp2" onclick="pick('gp2')">
+        <div class="gptop"><div class="gpn">South Asian women</div><div style="display:flex;align-items:center;gap:6px;"><span class="gpc">28 members</span><div class="rad"></div></div></div>
+        <div class="gpd">A space for South Asian women navigating menopause across cultural expectations, family silence, and generational stigma.</div>
+        <div><span class="tag" style="background:#EAF3DE;color:#3B6D11;">Active</span></div>
+      </div>
+      <div class="gp" id="gp3" onclick="pick('gp3')">
+        <div class="gptop"><div class="gpn">Cultural context</div><div style="display:flex;align-items:center;gap:6px;"><span class="gpc">19 members</span><div class="rad"></div></div></div>
+        <div class="gpd">Faith, tradition, and communities where menopause is rarely discussed.</div>
+        <div><span class="tag" style="background:#FAEEDA;color:#854F0B;">Growing</span></div>
+      </div>
+      <div class="gp" id="gp4" onclick="pick('gp4')">
+        <div class="gptop"><div class="gpn">HRT & treatment</div><div style="display:flex;align-items:center;gap:6px;"><span class="gpc">35 members</span><div class="rad"></div></div></div>
+        <div class="gpd">Hormone therapy options, experiences, and what to ask your doctor.</div>
+        <div><span class="tag" style="background:#EAF3DE;color:#3B6D11;">Active</span></div>
+      </div>
+      <div class="gp" id="gp5" onclick="pick('gp5')">
+        <div class="gptop"><div class="gpn">Work & daily life</div><div style="display:flex;align-items:center;gap:6px;"><span class="gpc">23 members</span><div class="rad"></div></div></div>
+        <div class="gpd">Managing symptoms at work and maintaining daily routines.</div>
+        <div><span class="tag" style="background:#EAF3DE;color:#3B6D11;">Active</span></div>
+      </div>
+      <button class="gbtn" onclick="go('join3')">Join group →</button>
+      <button class="obtn" onclick="go('join1')">Back</button>
+    </div>
+    <div class="bnav">
+      <button class="bn" onclick="go('home')"><span class="bni">⌂</span>Home</button>
+      <button class="bn on" onclick="go('groups')"><span class="bni">⚇</span>Group</button>
+      <button class="bn" onclick="go('doctor')"><span class="bni">♡</span>Doctor</button>
+      <button class="bn" onclick="go('faq')"><span class="bni">?</span>FAQ</button>
+    </div>
+  </div>
+
+  <!-- JOIN 3: Confirmed -->
+  <div class="screen" id="s-join3">
+    <div class="body">
+      <div class="yin">You're in!</div>
+      <div class="ttl">Your group</div>
+      <div class="members">
+        <div class="av" style="width:24px;height:24px;font-size:10px;background:#B5D4F4;color:#0C447C;">A</div>
+        <div class="av" style="width:24px;height:24px;font-size:10px;background:#F4C0D1;color:#72243E;">S</div>
+        <div class="av" style="width:24px;height:24px;font-size:10px;background:#C0DD97;color:#3B6D11;">M</div>
+        <div class="av" style="width:24px;height:24px;font-size:10px;background:#FAC775;color:#854F0B;">R</div>
+        <span style="font-size:10px;color:#bbb;margin-left:5px;">+19 others</span>
+      </div>
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <div class="av" style="width:24px;height:24px;font-size:10px;background:#F4C0D1;color:#72243E;">S</div>
+          <div><div class="pname">Sana</div><div class="pmeta">2h ago</div></div>
+        </div>
+        <div class="ptext">"My family didn't believe me. Finding this group helped me explain what I was going through."</div>
+        <div style="display:flex;gap:7px;margin-top:7px;"><span class="rxn">♡ 12</span><span class="rxn">💬 4</span></div>
+      </div>
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <div class="av" style="width:24px;height:24px;font-size:10px;background:#CECBF6;color:#3C3489;">P</div>
+          <div><div class="pname">Priya</div><div class="pmeta">4h ago</div></div>
+        </div>
+        <div class="ptext">"Started a Slack channel at work — more people related than I expected."</div>
+        <div style="display:flex;gap:7px;margin-top:7px;"><span class="rxn">♡ 7</span><span class="rxn">💬 2</span></div>
+      </div>
+      <button class="gbtn" onclick="go('groups')">Back to my groups</button>
+    </div>
+    <div class="bnav">
+      <button class="bn" onclick="go('home')"><span class="bni">⌂</span>Home</button>
+      <button class="bn on" onclick="go('groups')"><span class="bni">⚇</span>Group</button>
+      <button class="bn" onclick="go('doctor')"><span class="bni">♡</span>Doctor</button>
+      <button class="bn" onclick="go('faq')"><span class="bni">?</span>FAQ</button>
+    </div>
+  </div>
+
+  <!-- DOCTOR -->
+  <div class="screen" id="s-doctor">
+    <div class="body">
+      <div class="ttl">Talk with a doctor</div>
+      <div class="sub">Specialists in menopause care</div>
+      <div class="drc">
+        <div class="av" style="width:42px;height:42px;font-size:13px;background:#B5D4F4;color:#0C447C;">NP</div>
+        <div><div style="font-size:13px;font-weight:500;color:#1a1a1a;">Dr. Nalini Patel</div><div style="font-size:11px;color:#888;">OB-GYN · Menopause specialist</div><span class="tag" style="background:#EAF3DE;color:#3B6D11;">Available today</span></div>
+      </div>
+      <div class="drc">
+        <div class="av" style="width:42px;height:42px;font-size:13px;background:#C0DD97;color:#27500A;">JK</div>
+        <div><div style="font-size:13px;font-weight:500;color:#1a1a1a;">Dr. Jo Kim</div><div style="font-size:11px;color:#888;">Endocrinologist · HRT</div><span class="tag" style="background:#FAEEDA;color:#854F0B;">Next: Thu</span></div>
+      </div>
+      <div class="drc">
+        <div class="av" style="width:42px;height:42px;font-size:13px;background:#CECBF6;color:#3C3489;">LR</div>
+        <div><div style="font-size:13px;font-weight:500;color:#1a1a1a;">Dr. Lucia Reyes</div><div style="font-size:11px;color:#888;">Psychiatry · Mood & hormones</div><span class="tag" style="background:#EAF3DE;color:#3B6D11;">Available today</span></div>
+      </div>
+      <button class="bbtn">Request a call</button>
+    </div>
+    <div class="bnav">
+      <button class="bn" onclick="go('home')"><span class="bni">⌂</span>Home</button>
+      <button class="bn" onclick="go('groups')"><span class="bni">⚇</span>Group</button>
+      <button class="bn on" onclick="go('doctor')"><span class="bni">♡</span>Doctor</button>
+      <button class="bn" onclick="go('faq')"><span class="bni">?</span>FAQ</button>
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <div class="screen" id="s-faq">
+    <div class="body">
+      <div class="ttl">Common questions</div>
+      <div class="fc" onclick="tfaq(this)"><div style="flex:1;"><div class="fq">What is perimenopause?</div><div class="fa">The transition period before menopause begins</div><div class="fexp">Perimenopause typically starts in the mid-40s. Estrogen levels fluctuate causing irregular periods, hot flashes, and mood changes — even while periods continue.</div></div><span class="chev">›</span></div>
+      <div class="fc" onclick="tfaq(this)"><div style="flex:1;"><div class="fq">How long does it last?</div><div class="fa">Timelines vary — usually 4 to 10 years</div><div class="fexp">The average is around 7 years. Menopause is confirmed after 12 consecutive months without a period.</div></div><span class="chev">›</span></div>
+      <div class="fc" onclick="tfaq(this)"><div style="flex:1;"><div class="fq">What is HRT?</div><div class="fa">Hormone replacement therapy and how it helps</div><div class="fexp">HRT replaces estrogen the body stops making. It can reduce hot flashes, mood swings, and bone loss. Low-dose options exist — ask your doctor.</div></div><span class="chev">›</span></div>
+      <div class="fc" onclick="tfaq(this)"><div style="flex:1;"><div class="fq">Mood & mental health</div><div class="fa">How estrogen affects serotonin and emotions</div><div class="fexp">Estrogen influences serotonin, dopamine, and cortisol. As levels drop, anxiety and depression are common — often mistaken for unrelated issues. You're not imagining it.</div></div><span class="chev">›</span></div>
+      <div class="fc" onclick="tfaq(this)"><div style="flex:1;"><div class="fq">Cultural context & support</div><div class="fa">Navigating family, faith, and community stigma</div><div class="fexp">Many communities don't openly discuss menopause. This app was built for people who need support outside of those conversations.</div></div><span class="chev">›</span></div>
+      <div class="fc" onclick="tfaq(this)"><div style="flex:1;"><div class="fq">When to see a doctor?</div><div class="fa">Signs it's time to seek professional support</div><div class="fexp">See a doctor if symptoms disrupt your sleep, work, or relationships — or if you experience symptoms before age 40.</div></div><span class="chev">›</span></div>
+    </div>
+    <div class="bnav">
+      <button class="bn" onclick="go('home')"><span class="bni">⌂</span>Home</button>
+      <button class="bn" onclick="go('groups')"><span class="bni">⚇</span>Group</button>
+      <button class="bn" onclick="go('doctor')"><span class="bni">♡</span>Doctor</button>
+      <button class="bn on" onclick="go('faq')"><span class="bni">?</span>FAQ</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function filterGroups(val) {
+  var box = document.getElementById('search-results');
+  var results = box.querySelectorAll('.search-result');
+  var q = val.toLowerCase().trim();
+  if (!q) { box.style.display = 'none'; return; }
+  var any = false;
+  results.forEach(function(r) {
+    var match = r.getAttribute('data-name').toLowerCase().indexOf(q) > -1;
+    r.style.display = match ? 'block' : 'none';
+    if (match) any = true;
+  });
+  box.style.display = any ? 'block' : 'none';
+}
+function go(id) {
+  document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+  var sc = document.getElementById('s-' + id);
+  sc.classList.add('active');
+  var b = sc.querySelector('.body');
+  if (b) b.scrollTop = 0;
+}
+function tog(el) {
+  el.classList.toggle('sel');
+  var chk = el.querySelector('.chk');
+  if (el.classList.contains('sel')) {
+    chk.classList.add('on');
+    if (!chk.querySelector('.cdot')) { var d = document.createElement('div'); d.className = 'cdot'; chk.appendChild(d); }
+  } else {
+    chk.classList.remove('on');
+    var d = chk.querySelector('.cdot');
+    if (d) d.remove();
+  }
+}
+function pick(id) {
+  document.querySelectorAll('.gp').forEach(function(g) {
+    g.classList.remove('sel');
+    var r = g.querySelector('.rad');
+    r.classList.remove('on');
+    var d = r.querySelector('.cdot');
+    if (d) d.remove();
+  });
+  var el = document.getElementById(id);
+  el.classList.add('sel');
+  var r = el.querySelector('.rad');
+  r.classList.add('on');
+  if (!r.querySelector('.cdot')) { var d = document.createElement('div'); d.className = 'cdot'; r.appendChild(d); }
+}
+function tfaq(el) { el.classList.toggle('open'); }
+</script>
+</body>
+</html>

@@ -1,0 +1,1999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hearth — Interactive Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400;1,9..144,500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #FFFFFF;
+    --paper-deep: #F6EDE3;
+    --paper-soft: #FBF7F2;
+    --paper-dark: #EBDDCD;
+    --ink: #3D2A2E;
+    --ink-soft: #6B4E52;
+    --ink-faint: #A08B8F;
+    --rose: #E85C6F;
+    --rose-soft: #F4B4BD;
+    --rose-whisper: rgba(232, 92, 111, 0.08);
+    --lilac: #B5A3D8;
+    --lilac-soft: #E0D4ED;
+    --berry: #B57A8E;
+    --berry-soft: #E4C6D0;
+    --apricot: #F0C068;
+    --apricot-soft: #FBE4B8;
+    --line: rgba(61, 42, 46, 0.12);
+    --line-soft: rgba(61, 42, 46, 0.06);
+    --shadow: 0 40px 100px -50px rgba(61, 42, 46, 0.4), 0 8px 20px -8px rgba(61, 42, 46, 0.12);
+  }
+
+  *{ box-sizing: border-box; margin: 0; padding: 0; }
+  html{ scroll-behavior: smooth; }
+
+  body{
+    font-family: 'DM Sans', system-ui, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse 900px 600px at 5% -5%, rgba(232, 92, 111, 0.06), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 110% 20%, rgba(181, 163, 216, 0.06), transparent 60%),
+      radial-gradient(ellipse 800px 500px at 50% 110%, rgba(181, 122, 142, 0.05), transparent 60%);
+  }
+
+  body::before{
+    content: '';
+    position: fixed; inset: 0; pointer-events: none; z-index: 100;
+    opacity: 0.15; mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.16 0 0 0 0 0.14 0 0 0 0 0.13 0 0 0 0.15 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+
+  /* ============ DEMO SHELL ============ */
+  .demo{
+    min-height: 100vh;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 32px 56px 48px;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    gap: 32px;
+  }
+
+  header.demo-head{
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--line);
+  }
+  header.demo-head .brand{
+    font-family: 'Fraunces', serif;
+    font-weight: 500; font-size: 22px;
+    letter-spacing: -0.01em;
+  }
+  header.demo-head .brand em{ font-style: italic; font-weight: 400; color: var(--rose); }
+  header.demo-head .tag{
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  header.demo-head .tag b{ color: var(--rose); font-weight: 500; }
+
+  /* ============ MAIN STAGE ============ */
+  .stage{
+    display: grid;
+    grid-template-columns: 420px 1fr 380px;
+    gap: 60px;
+    align-items: center;
+  }
+
+  /* ============ LEFT RAIL ============ */
+  .rail{
+    padding: 0 4px;
+  }
+  .rail .eyebrow{
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; letter-spacing: 0.24em; text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 18px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .rail .eyebrow::before{
+    content: ''; width: 32px; height: 1px; background: var(--rose);
+  }
+  .rail h1{
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-size: clamp(56px, 6vw, 92px);
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    margin-bottom: 32px;
+  }
+  .rail h1 em{ font-style: italic; color: var(--rose); }
+
+  .rail .flow{
+    display: flex; flex-direction: column; gap: 2px;
+    margin-top: 32px;
+  }
+  .rail .flow-step{
+    padding: 9px 12px;
+    display: flex; align-items: center; gap: 14px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background 0.2s;
+    user-select: none;
+  }
+  .rail .flow-step:hover{ background: var(--paper-soft); }
+  .rail .flow-step.on{
+    background: var(--paper-deep);
+  }
+  .rail .flow-step .n{
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; letter-spacing: 0.15em;
+    color: var(--ink-faint);
+    min-width: 24px;
+    font-weight: 500;
+  }
+  .rail .flow-step.on .n{ color: var(--rose); }
+  .rail .flow-step .name{
+    font-family: 'Fraunces', serif;
+    font-size: 15px; font-weight: 400;
+    color: var(--ink-soft);
+    letter-spacing: -0.01em;
+    flex: 1;
+  }
+  .rail .flow-step.on .name{
+    font-style: italic;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .rail .flow-step .arrow{
+    font-family: 'Fraunces', serif;
+    color: var(--rose);
+    opacity: 0;
+    transition: opacity 0.2s, transform 0.2s;
+    font-style: italic;
+  }
+  .rail .flow-step.on .arrow{ opacity: 1; transform: translateX(2px); }
+
+  /* ============ CENTER: PHONE ============ */
+  .phone-stage{
+    display: flex;
+    justify-content: center;
+    position: relative;
+  }
+  .phone{
+    width: 380px;
+    aspect-ratio: 380 / 800;
+    background: var(--paper-soft);
+    border-radius: 52px;
+    padding: 10px;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(61, 42, 46, 0.08);
+    position: relative;
+  }
+  .phone-frame{
+    width: 100%; height: 100%;
+    background: var(--paper);
+    border-radius: 44px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Each screen is absolutely-positioned and fades in */
+  .screen{
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    opacity: 0; pointer-events: none;
+    transform: translateY(8px);
+    transition: opacity 0.35s ease, transform 0.4s cubic-bezier(.22,1,.36,1);
+  }
+  .screen.active{
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  /* Status bar */
+  .status{
+    height: 46px;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 28px 0;
+    font-family: 'DM Sans';
+    font-size: 13px; font-weight: 600;
+    color: var(--ink);
+    flex-shrink: 0;
+  }
+  .status-ic{ display: flex; gap: 6px; align-items: center; }
+  .status-ic svg{ width: 15px; height: 15px; fill: var(--ink); }
+
+  /* Bottom nav */
+  .tabbar{
+    height: 78px;
+    flex-shrink: 0;
+    display: flex;
+    border-top: 1px solid var(--line);
+    padding: 10px 12px 24px;
+    background: var(--paper-soft);
+  }
+  .tab{
+    flex: 1;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+    font-family: 'DM Mono';
+    font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--ink-faint);
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+  .tab svg{ width: 21px; height: 21px; stroke: var(--ink-faint); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; transition: stroke 0.2s; }
+  .tab.active{ color: var(--rose); }
+  .tab.active svg{ stroke: var(--rose); }
+  .tab:hover:not(.active){ color: var(--ink); }
+  .tab:hover:not(.active) svg{ stroke: var(--ink); }
+
+  .home-ind{
+    position: absolute;
+    bottom: 9px; left: 50%; transform: translateX(-50%);
+    width: 120px; height: 5px;
+    background: var(--ink);
+    opacity: 0.35;
+    border-radius: 3px;
+    z-index: 5;
+  }
+
+  .content{
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px 22px 0;
+    -webkit-overflow-scrolling: touch;
+  }
+  .content::-webkit-scrollbar{ width: 0; }
+
+  .nav-bar{
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 0 16px;
+  }
+  .nav-bar .back{
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--paper-deep);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; color: var(--ink);
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .nav-bar .back:hover{ background: var(--paper-dark); }
+  .nav-bar .title{
+    font-family: 'Fraunces', serif; font-size: 14px; font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+  .nav-bar .right{
+    font-family: 'Fraunces', serif; font-style: italic; font-size: 12px; color: var(--rose);
+    cursor: pointer;
+  }
+
+  /* ============ HOTSPOT PULSE ============ */
+  .pulse{
+    position: relative;
+  }
+  .pulse::after{
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: inherit;
+    border: 2px solid var(--rose);
+    animation: pulseRing 2s ease-out infinite;
+    pointer-events: none;
+  }
+  @keyframes pulseRing{
+    0%{ opacity: 0.9; transform: scale(0.85); }
+    100%{ opacity: 0; transform: scale(1.15); }
+  }
+
+  /* ============ SCREEN-1: HOME ============ */
+  .s1-head{ display: flex; justify-content: space-between; align-items: center; padding: 10px 0 16px; }
+  .s1-logo{ font-family: 'Fraunces'; font-size: 24px; font-weight: 500; letter-spacing: -0.01em; }
+  .s1-logo em{ font-style: italic; color: var(--rose); }
+  .s1-loc{ display: flex; align-items: center; gap: 6px; padding: 6px 11px; background: var(--paper-deep); border-radius: 999px; font-size: 11px; color: var(--ink-soft); }
+  .s1-loc::before{ content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--lilac); }
+  .s1-greet{ font-family: 'Fraunces'; font-size: 34px; font-weight: 300; line-height: 1.1; margin-bottom: 4px; letter-spacing: -0.02em; }
+  .s1-greet em{ font-style: italic; color: var(--rose); }
+  .s1-sub{ font-size: 13px; color: var(--ink-soft); font-style: italic; font-family: 'Fraunces'; margin-bottom: 20px; }
+
+  .care-card{
+    background: var(--paper-deep);
+    border-radius: 16px; padding: 16px 18px;
+    margin-bottom: 20px;
+    border: 1px solid var(--line-soft);
+  }
+  .care-head{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .care-head .lbl{ font-family: 'DM Mono'; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); }
+  .care-head .ratio{ font-family: 'Fraunces'; font-size: 15px; font-style: italic; color: var(--rose); }
+  .dots{ display: flex; gap: 3px; margin-bottom: 12px; }
+  .dots span{ flex: 1; height: 9px; border-radius: 2px; }
+  .d-given{ background: var(--rose); }
+  .d-got{ background: var(--lilac); }
+  .d-empty{ background: var(--line); }
+  .care-note{ font-size: 12px; color: var(--ink-soft); font-style: italic; font-family: 'Fraunces'; line-height: 1.45; }
+
+  .sec-title{ display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
+  .sec-title h4{ font-family: 'Fraunces'; font-weight: 400; font-size: 18px; letter-spacing: -0.01em; }
+  .sec-title .count{ font-family: 'DM Mono'; font-size: 10px; color: var(--ink-faint); letter-spacing: 0.12em; }
+
+  .ask-card{
+    padding: 13px 15px;
+    background: var(--paper-soft);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    margin-bottom: 10px;
+    display: flex; gap: 13px; align-items: center;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  }
+  .ask-card:hover{
+    transform: translateY(-1px);
+    border-color: var(--rose-soft);
+    box-shadow: 0 6px 18px -10px rgba(232, 92, 111, 0.3);
+  }
+  .ask-card.urgent{ border-color: var(--rose); background: linear-gradient(to right, rgba(232,92,111,0.1), transparent 80%); }
+  .ask-card.joined{
+    background: var(--lilac-soft);
+    border-color: transparent;
+  }
+  .ask-card.joined .ask-act{
+    color: #3D2D54;
+    background: rgba(255,255,255,0.55);
+    border-color: transparent;
+  }
+  .avatar{ width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Fraunces'; font-size: 14px; font-weight: 500; flex-shrink: 0; }
+  .av-1{ background: var(--lilac-soft); color: #3D2D54; }
+  .av-2{ background: var(--apricot-soft); color: #8A6520; }
+  .av-3{ background: var(--rose-soft); color: #8A2A3B; }
+  .av-4{ background: var(--berry-soft); color: #5A3040; }
+  .av-5{ background: #D6C6BA; color: #4A3626; }
+  .av-6{ background: #B9C7D1; color: #2D4356; }
+
+  .ask-body{ flex: 1; min-width: 0; }
+  .ask-name{ font-size: 13px; font-weight: 500; color: var(--ink); margin-bottom: 3px; }
+  .ask-name .what{ font-weight: 400; color: var(--ink-soft); font-style: italic; font-family: 'Fraunces'; }
+  .ask-meta{ font-family: 'DM Mono'; font-size: 9px; color: var(--ink-faint); letter-spacing: 0.08em; line-height: 1.4; }
+  .ask-meta .urg{ color: var(--rose); font-weight: 500; }
+  .ask-act{ font-family: 'Fraunces'; font-size: 12px; color: var(--rose); font-style: italic; flex-shrink: 0; padding: 5px 10px; border: 1px solid var(--rose-soft); border-radius: 99px; }
+
+  /* ============ SCREEN-2: CHAT ============ */
+  .s2-head{ padding: 8px 0 14px; border-bottom: 1px solid var(--line); margin-bottom: 14px; }
+  .s2-head h3{ font-family: 'Fraunces'; font-weight: 400; font-size: 20px; letter-spacing: -0.01em; }
+  .s2-head h3 em{ font-style: italic; color: var(--rose); }
+  .s2-head .sub{ font-family: 'DM Mono'; font-size: 10px; color: var(--ink-faint); letter-spacing: 0.1em; margin-top: 4px; }
+
+  .date-div{ text-align: center; font-family: 'DM Mono'; font-size: 9px; color: var(--ink-faint); letter-spacing: 0.2em; margin: 6px 0 14px; position: relative; }
+  .date-div::before, .date-div::after{ content: ''; position: absolute; top: 50%; width: 60px; height: 1px; background: var(--line); }
+  .date-div::before{ left: 30px; }
+  .date-div::after{ right: 30px; }
+
+  .msg{ display: flex; gap: 9px; margin-bottom: 14px; }
+  .msg .av{ width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0; font-size: 11px; display: flex; align-items: center; justify-content: center; font-family: 'Fraunces'; font-weight: 500; }
+  .msg-bub{ background: var(--paper-deep); padding: 10px 13px; border-radius: 16px 16px 16px 4px; max-width: 230px; }
+  .msg-name{ font-size: 9px; font-weight: 500; color: var(--rose); margin-bottom: 3px; font-family: 'DM Mono'; letter-spacing: 0.1em; }
+  .msg-text{ font-size: 13px; line-height: 1.45; color: var(--ink); }
+  .msg-react{ display: flex; gap: 4px; margin-top: 6px; }
+  .msg-react span{ font-size: 10px; background: var(--paper-soft); padding: 2px 7px; border-radius: 10px; border: 1px solid var(--line); cursor: pointer; transition: background 0.15s; }
+  .msg-react span:hover{ background: var(--rose-soft); }
+
+  .msg.own{ justify-content: flex-end; }
+  .msg.own .msg-bub{ background: var(--rose-soft); border-radius: 16px 16px 4px 16px; color: #8A1F35; }
+  .msg.own .msg-name{ display: none; }
+
+  .voice-msg{ display: flex; align-items: center; gap: 10px; background: var(--lilac-soft); padding: 11px 14px; border-radius: 16px; max-width: 230px; cursor: pointer; }
+  .voice-msg .play{ width: 22px; height: 22px; border-radius: 50%; background: #3D2D54; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .voice-msg .play svg{ width: 9px; height: 9px; fill: var(--paper); }
+  .waveform{ display: flex; align-items: center; gap: 2px; flex: 1; height: 20px; }
+  .waveform span{ width: 2px; background: #3D2D54; border-radius: 1px; transition: background 0.3s; }
+  .voice-msg.playing .waveform span{ animation: bounce 0.8s ease-in-out infinite; }
+  @keyframes bounce{
+    0%,100%{ transform: scaleY(1); }
+    50%{ transform: scaleY(1.4); }
+  }
+  .v-time{ font-family: 'DM Mono'; font-size: 10px; color: #3D2D54; }
+
+  .img-msg{ max-width: 180px; border-radius: 12px; overflow: hidden; background: var(--apricot-soft); padding: 20px 16px; }
+  .img-msg .ic{ height: 60px; display: flex; align-items: center; justify-content: center; margin-bottom: 6px; }
+  .img-msg .ic svg{ width: 40px; height: 40px; stroke: #7A4520; fill: none; stroke-width: 1.2; }
+  .img-msg .cap{ font-family: 'Fraunces'; font-style: italic; font-size: 11px; color: #7A4520; text-align: center; }
+
+  .chat-input{
+    margin: auto -2px 12px;
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 14px;
+    background: var(--paper-deep);
+    border-radius: 28px;
+    border: 1px solid var(--line);
+    flex-shrink: 0;
+  }
+  .chat-input .ph{ flex: 1; font-size: 13px; color: var(--ink-faint); font-style: italic; font-family: 'Fraunces'; }
+  .chat-input svg{ width: 20px; height: 20px; stroke: var(--ink-soft); stroke-width: 1.5; fill: none; stroke-linecap: round; stroke-linejoin: round; cursor: pointer; }
+  .chat-input .mic{ stroke: var(--rose); }
+
+  /* ============ SCREEN-3: CALENDAR ============ */
+  .s3-head{ padding: 10px 0 16px; }
+  .s3-head h3{ font-family: 'Fraunces'; font-weight: 400; font-size: 26px; letter-spacing: -0.02em; }
+  .s3-head h3 em{ font-style: italic; color: var(--rose); }
+  .s3-head .sub{ font-family: 'DM Mono'; font-size: 10px; color: var(--ink-faint); letter-spacing: 0.14em; margin-top: 3px; }
+
+  .week-strip{ display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 18px; }
+  .day-col{ aspect-ratio: 1/1.6; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 10px; background: var(--paper-soft); border: 1px solid var(--line-soft); padding: 6px 0; cursor: pointer; transition: background 0.2s; }
+  .day-col:hover{ background: var(--paper-deep); }
+  .day-col .d-name{ font-family: 'DM Mono'; font-size: 9px; color: var(--ink-faint); letter-spacing: 0.08em; margin-bottom: 4px; }
+  .day-col .d-num{ font-family: 'Fraunces'; font-size: 15px; font-weight: 400; margin-bottom: 4px; }
+  .day-col .d-pip{ display: flex; gap: 2px; }
+  .day-col .d-pip span{ width: 4px; height: 4px; border-radius: 50%; }
+  .day-col.today{ background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .day-col.today:hover{ background: var(--ink); }
+  .day-col.today .d-name, .day-col.today .d-num{ color: var(--paper); }
+
+  .cal-list{ display: flex; flex-direction: column; gap: 10px; }
+  .cal-block{
+    padding: 13px 15px;
+    border-radius: 13px;
+    border-left: 3px solid;
+    background: var(--paper-soft);
+    border-top: 1px solid var(--line);
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .cal-block:hover{ transform: translateX(2px); }
+  .cal-block .time{ font-family: 'DM Mono'; font-size: 9px; letter-spacing: 0.14em; color: var(--ink-faint); margin-bottom: 5px; }
+  .cal-block .ttl{ font-size: 13px; color: var(--ink); font-weight: 500; margin-bottom: 5px; line-height: 1.35; }
+  .cal-block .sta{ font-family: 'Fraunces'; font-size: 11px; font-style: italic; color: var(--ink-soft); display: flex; align-items: center; gap: 6px; }
+  .cal-block .sta .dot{ width: 5px; height: 5px; border-radius: 50%; }
+  .cb-filled{ border-left-color: var(--lilac); }
+  .cb-filled .sta{ color: var(--lilac); }
+  .cb-filled .sta .dot{ background: var(--lilac); }
+  .cb-urgent{ border-left-color: var(--rose); background: linear-gradient(to right, rgba(232,92,111,0.08), transparent 70%); }
+  .cb-urgent .sta{ color: var(--rose); }
+  .cb-urgent .sta .dot{ background: var(--rose); animation: pulseDot 2s infinite; }
+  @keyframes pulseDot{ 0%,100%{ opacity: 1; } 50%{ opacity: 0.4; } }
+  .cb-open{ border-left-color: var(--apricot); border-style: dashed; border-width: 1px 1px 1px 3px; }
+  .cb-open .sta{ color: #A64E15; }
+  .cb-open .sta .dot{ background: var(--apricot); }
+
+  .fab{
+    position: absolute;
+    bottom: 96px; right: 22px;
+    background: var(--rose);
+    color: var(--paper);
+    padding: 13px 22px;
+    border-radius: 999px;
+    font-family: 'Fraunces'; font-size: 14px; font-style: italic;
+    box-shadow: 0 10px 30px -10px rgba(232, 92, 111, 0.6);
+    display: flex; align-items: center; gap: 8px;
+    z-index: 4;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .fab:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 14px 34px -10px rgba(232, 92, 111, 0.7);
+  }
+  .fab::before{ content: '+'; font-size: 16px; font-style: normal; }
+
+  /* ============ SCREEN-4: ASK FORM ============ */
+  .s4-prompt{ font-family: 'Fraunces'; font-style: italic; font-size: 30px; line-height: 1.15; letter-spacing: -0.02em; margin: 6px 0 4px; font-weight: 300; }
+  .s4-prompt em{ color: var(--rose); }
+  .s4-sub{ font-family: 'Fraunces'; font-size: 13px; font-style: italic; color: var(--ink-soft); margin-bottom: 22px; }
+
+  .form-lbl{ font-family: 'DM Mono'; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 10px; margin-top: 16px; }
+  .chip-row{ display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip{ padding: 7px 12px; border: 1px solid var(--line); border-radius: 99px; font-size: 12px; color: var(--ink-soft); background: var(--paper-soft); cursor: pointer; transition: all 0.2s; user-select: none; }
+  .chip:hover{ border-color: var(--rose-soft); color: var(--rose); }
+  .chip.on{ background: var(--rose); color: var(--paper); border-color: var(--rose); }
+  .chip.sage-on, .chip.lilac-on{ background: var(--lilac); color: var(--paper); border-color: var(--lilac); }
+
+  .priv-row{ display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; background: var(--paper-deep); border-radius: 12px; margin-top: 10px; cursor: pointer; }
+  .priv-row .k{ font-size: 12px; color: var(--ink); }
+  .priv-row .v{ font-family: 'Fraunces'; font-style: italic; font-size: 12px; color: var(--rose); }
+
+  .toggle{ width: 40px; height: 22px; background: var(--line); border-radius: 99px; position: relative; flex-shrink: 0; transition: background 0.2s; cursor: pointer; }
+  .toggle.on{ background: var(--lilac); }
+  .toggle::after{ content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background: var(--paper); border-radius: 50%; transition: left 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+  .toggle.on::after{ left: 20px; }
+
+  .anon-note{ font-family: 'Fraunces'; font-style: italic; font-size: 12px; color: var(--ink-soft); margin-top: 14px; padding: 12px 14px; border-left: 3px solid var(--berry); background: rgba(181, 122, 142, 0.05); border-radius: 6px; line-height: 1.5; }
+
+  .submit-btn{ margin: 18px 0 20px; padding: 14px; background: var(--ink); color: var(--paper); text-align: center; border-radius: 99px; font-family: 'Fraunces'; font-size: 14px; font-style: italic; cursor: pointer; transition: background 0.2s; }
+  .submit-btn:hover{ background: var(--rose); }
+
+  /* ============ SCREEN-5: BEING HELD ============ */
+  .s5-eyebrow{ font-family: 'DM Mono'; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-faint); margin-top: 4px; }
+  .s5-title{ font-family: 'Fraunces'; font-weight: 300; font-size: 32px; line-height: 1.05; letter-spacing: -0.03em; margin: 6px 0 4px; }
+  .s5-title em{ font-style: italic; color: var(--rose); }
+  .s5-sub{ font-family: 'Fraunces'; font-size: 13px; font-style: italic; color: var(--ink-soft); margin-bottom: 18px; }
+
+  .your-ask{ padding: 14px 16px; border-radius: 14px; background: var(--paper-deep); margin-bottom: 18px; border: 1px solid var(--line-soft); }
+  .your-ask .tg{ font-family: 'DM Mono'; font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 6px; }
+  .your-ask .wh{ font-family: 'Fraunces'; font-size: 16px; font-style: italic; color: var(--ink); line-height: 1.3; margin-bottom: 8px; }
+  .your-ask .mt{ display: flex; gap: 10px; font-family: 'DM Mono'; font-size: 9px; color: var(--ink-faint); letter-spacing: 0.08em; flex-wrap: wrap; }
+
+  .slot-bar{ margin-bottom: 18px; padding: 12px 14px; background: var(--paper-soft); border: 1px solid var(--line-soft); border-radius: 12px; }
+  .slot-head{ display: flex; justify-content: space-between; font-family: 'DM Mono'; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 8px; }
+  .slot-head .lf{ color: var(--lilac); font-weight: 500; transition: color 0.3s; }
+  .slot-head .lf.full{ color: var(--rose); }
+  .slot-track{ height: 5px; background: var(--line); border-radius: 3px; overflow: hidden; }
+  .slot-fill{ height: 100%; background: var(--lilac); border-radius: 3px; transition: width 0.6s cubic-bezier(.22,1,.36,1); }
+
+  .responses-head{ display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px; }
+  .responses-head h4{ font-family: 'Fraunces'; font-weight: 400; font-size: 18px; letter-spacing: -0.01em; }
+  .responses-head h4 em{ font-style: italic; color: var(--rose); }
+  .responses-head .c{ font-family: 'DM Mono'; font-size: 10px; color: var(--lilac); letter-spacing: 0.1em; }
+  .responses-head .c.pending{ color: var(--rose); }
+
+  .resp-card{ padding: 12px 14px; background: var(--paper-soft); border: 1px solid var(--line); border-radius: 13px; margin-bottom: 8px; display: flex; gap: 11px; align-items: flex-start; transition: all 0.4s; }
+  .resp-card.confirmed{ background: var(--lilac-soft); border-color: transparent; }
+  .resp-card.just-confirmed{ animation: slideIn 0.5s ease-out; }
+  @keyframes slideIn{
+    0%{ opacity: 0; transform: translateY(-8px); }
+    100%{ opacity: 1; transform: translateY(0); }
+  }
+  .resp-card.declined{ opacity: 0.4; }
+  .resp-body{ flex: 1; min-width: 0; }
+  .resp-head{ display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px; }
+  .resp-nm{ font-size: 12px; font-weight: 500; color: var(--ink); }
+  .resp-prox{ font-family: 'DM Mono'; font-size: 9px; color: var(--ink-faint); letter-spacing: 0.08em; }
+  .resp-msg{ font-family: 'Fraunces'; font-style: italic; font-size: 12px; color: var(--ink-soft); line-height: 1.4; }
+  .confirmed-tag{ font-family: 'DM Mono'; font-size: 9px; color: #3D2D54; background: rgba(255,255,255,0.55); padding: 3px 8px; border-radius: 99px; letter-spacing: 0.12em; font-weight: 500; }
+  .resp-trust{ display: flex; gap: 4px; margin-top: 6px; flex-wrap: wrap; }
+  .trust-tag{ font-family: 'DM Mono'; font-size: 8px; padding: 2px 6px; background: var(--lilac-soft); color: #3D2D54; border-radius: 99px; letter-spacing: 0.08em; }
+  .trust-tag.butter{ background: var(--apricot-soft); color: #7A4520; }
+  .trust-tag.plum{ background: var(--berry-soft); color: #4F1D38; }
+
+  .resp-actions{ display: flex; gap: 14px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line-soft); align-items: center; }
+  .act-approve{ font-family: 'Fraunces'; font-style: italic; font-size: 12px; color: var(--paper); background: var(--rose); padding: 6px 14px; border-radius: 99px; cursor: pointer; transition: transform 0.15s; }
+  .act-approve:hover{ transform: translateY(-1px); }
+  .act-decline{ font-family: 'Fraunces'; font-style: italic; font-size: 11px; color: var(--ink-faint); cursor: pointer; }
+  .act-decline:hover{ color: var(--ink-soft); }
+
+  .full-notice{
+    margin-top: 14px;
+    padding: 14px;
+    background: var(--lilac-soft);
+    border-radius: 12px;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 14px;
+    color: #3D2D54;
+    line-height: 1.4;
+    text-align: center;
+    display: none;
+    animation: slideIn 0.5s ease-out;
+  }
+  .full-notice.show{ display: block; }
+
+  /* ============ SCREEN-6: HUB ============ */
+  .s6-head{ padding: 10px 0 4px; }
+  .s6-head h3{ font-family: 'Fraunces'; font-weight: 300; font-size: 36px; letter-spacing: -0.03em; line-height: 1.02; }
+  .s6-head h3 em{ font-style: italic; color: var(--berry); }
+  .s6-sub{ font-family: 'Fraunces'; font-size: 14px; font-style: italic; color: var(--ink-soft); margin-top: 6px; margin-bottom: 20px; }
+
+  .feel-row{ display: flex; gap: 6px; overflow-x: hidden; margin-bottom: 22px; flex-wrap: wrap; }
+  .feel{ padding: 7px 13px; border: 1px solid var(--berry-soft); border-radius: 99px; font-family: 'Fraunces'; font-style: italic; font-size: 12px; color: var(--berry); background: rgba(181, 122, 142, 0.05); flex-shrink: 0; cursor: pointer; transition: all 0.2s; user-select: none; }
+  .feel.sel{ background: var(--berry); color: var(--paper); border-color: var(--berry); }
+
+  .sym-grid{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding-bottom: 10px; }
+  .sym-card{
+    padding: 16px 14px;
+    border-radius: 16px;
+    aspect-ratio: 1 / 1;
+    display: flex; flex-direction: column; justify-content: space-between;
+    border: 1px solid var(--line-soft);
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .sym-card:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -12px rgba(181, 122, 142, 0.35);
+  }
+  .sym-card .ic{ width: 28px; height: 28px; }
+  .sym-card h5{ font-family: 'Fraunces'; font-weight: 400; font-size: 16px; line-height: 1.1; letter-spacing: -0.01em; }
+  .sym-card .n{ font-family: 'DM Mono'; font-size: 9px; color: var(--ink-faint); letter-spacing: 0.08em; }
+  .sc-1{ background: rgba(232, 92, 111, 0.10); }
+  .sc-2{ background: rgba(181, 122, 142, 0.10); }
+  .sc-3{ background: rgba(240, 192, 104, 0.25); }
+  .sc-4{ background: rgba(181, 163, 216, 0.15); }
+  .sc-5{ background: rgba(232, 92, 111, 0.06); }
+  .sc-6{ background: rgba(181, 122, 142, 0.06); }
+
+  .hub-pocket{
+    margin: 18px 0 12px;
+    padding: 14px 16px;
+    background: var(--berry);
+    color: var(--paper);
+    border-radius: 14px;
+    display: flex; justify-content: space-between; align-items: center;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .hub-pocket:hover{ transform: translateY(-1px); }
+  .hub-pocket h6{ font-family: 'Fraunces'; font-style: italic; font-size: 14px; font-weight: 400; }
+  .hub-pocket p{ font-family: 'Fraunces'; font-style: italic; font-size: 11px; opacity: 0.8; margin-top: 2px; }
+  .hub-pocket .arr{ font-family: 'Fraunces'; font-size: 18px; font-style: italic; }
+
+  /* ============ SCREEN-7: SYMPTOM DETAIL ============ */
+  .s7-eyebrow{ font-family: 'DM Mono'; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--berry); margin-top: 4px; }
+  .s7-title{ font-family: 'Fraunces'; font-weight: 300; font-size: 36px; letter-spacing: -0.03em; line-height: 1; margin: 6px 0; }
+  .s7-title em{ font-style: italic; color: var(--rose); }
+  .s7-meta{ font-family: 'Fraunces'; font-size: 13px; font-style: italic; color: var(--ink-soft); margin-bottom: 18px; }
+
+  .tabs{ display: flex; gap: 0; border-bottom: 1px solid var(--line); margin-bottom: 16px; }
+  .tabs .t{ flex: 1; text-align: center; padding: 10px 0; font-family: 'DM Mono'; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-faint); cursor: pointer; transition: color 0.2s; border-bottom: 2px solid transparent; }
+  .tabs .t:hover{ color: var(--ink-soft); }
+  .tabs .t.on{ color: var(--ink); border-bottom-color: var(--rose); font-weight: 500; }
+
+  .tab-content{ display: none; }
+  .tab-content.on{ display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn{
+    from{ opacity: 0; transform: translateY(4px); }
+    to{ opacity: 1; transform: translateY(0); }
+  }
+
+  .expert-card{ padding: 16px; background: var(--paper-deep); border-radius: 14px; margin-bottom: 10px; }
+  .expert-card .ex-head{ display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .expert-card .ex-av{ width: 36px; height: 36px; border-radius: 50%; background: var(--berry); color: var(--paper); display: flex; align-items: center; justify-content: center; font-family: 'Fraunces'; font-size: 14px; }
+  .expert-card .ex-info .nm{ font-family: 'Fraunces'; font-size: 14px; }
+  .expert-card .ex-info .ti{ font-family: 'DM Mono'; font-size: 9px; letter-spacing: 0.14em; color: var(--ink-faint); text-transform: uppercase; margin-top: 2px; }
+  .expert-card p{ font-family: 'Fraunces'; font-size: 13px; line-height: 1.5; color: var(--ink-soft); font-style: italic; }
+
+  .peer-card{ padding: 13px 15px; border-radius: 14px; background: var(--paper-soft); border: 1px solid var(--line-soft); margin-bottom: 10px; display: flex; gap: 12px; align-items: flex-start; }
+  .peer-card .av{ width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; font-family: 'Fraunces'; font-size: 12px; display: flex; align-items: center; justify-content: center; font-weight: 500; }
+  .peer-body{ flex: 1; min-width: 0; }
+  .peer-q{ font-family: 'Fraunces'; font-style: italic; font-size: 13px; line-height: 1.45; color: var(--ink); margin-bottom: 6px; }
+  .peer-nm{ font-family: 'DM Mono'; font-size: 9px; color: var(--ink-faint); letter-spacing: 0.08em; display: flex; align-items: center; gap: 8px; }
+  .peer-nm .rec{ color: var(--lilac); }
+  .peer-react{ display: flex; gap: 5px; margin-top: 7px; }
+  .peer-react span{ font-size: 10px; background: var(--paper); padding: 2px 7px; border-radius: 10px; border: 1px solid var(--line); cursor: pointer; transition: background 0.15s; }
+  .peer-react span:hover{ background: var(--rose-soft); }
+
+  .audio-card{ background: var(--lilac-soft) !important; border-color: transparent !important; }
+  .audio-card .av{ background: #3D2D54; color: var(--paper); }
+  .audio-card .play-row{ display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .audio-card .play-btn{ width: 26px; height: 26px; border-radius: 50%; background: #3D2D54; display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer; }
+  .audio-card .play-btn svg{ width: 10px; height: 10px; fill: var(--paper); }
+  .audio-card .play-wave{ display: flex; align-items: center; gap: 2px; flex: 1; height: 18px; }
+  .audio-card .play-wave span{ width: 2px; background: #3D2D54; border-radius: 1px; opacity: 0.8; }
+  .audio-card .play-time{ font-family: 'DM Mono'; font-size: 10px; color: #3D2D54; }
+  .audio-card .vt{ font-family: 'Fraunces'; font-style: italic; font-size: 12px; color: #2D1F3E; line-height: 1.4; }
+
+  /* ============ SCREEN-8: POCKET ============ */
+  .s8-head{ padding: 10px 0 14px; }
+  .s8-head h3{ font-family: 'Fraunces'; font-weight: 300; font-size: 34px; letter-spacing: -0.03em; }
+  .s8-head h3 em{ font-style: italic; color: var(--lilac); }
+  .s8-sub{ font-family: 'Fraunces'; font-size: 13px; font-style: italic; color: var(--ink-soft); margin-top: 3px; }
+
+  .col-row{ display: flex; gap: 6px; margin: 18px 0 14px; flex-wrap: wrap; }
+  .col{ padding: 6px 11px; border: 1px solid var(--line); border-radius: 99px; font-size: 11px; color: var(--ink-soft); background: var(--paper-soft); cursor: pointer; transition: all 0.2s; user-select: none; }
+  .col:hover{ border-color: var(--ink); color: var(--ink); }
+  .col.on{ background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+  .feat{ border-radius: 16px; overflow: hidden; background: var(--berry); color: var(--paper); padding: 22px 18px; margin-bottom: 16px; position: relative; cursor: pointer; transition: transform 0.2s; }
+  .feat:hover{ transform: translateY(-2px); }
+  .feat::before{ content: '"'; position: absolute; top: 8px; right: 18px; font-family: 'Fraunces'; font-size: 96px; opacity: 0.25; line-height: 1; font-weight: 300; }
+  .feat .typ{ font-family: 'DM Mono'; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.75; margin-bottom: 10px; }
+  .feat h5{ font-family: 'Fraunces'; font-weight: 300; font-style: italic; font-size: 21px; line-height: 1.2; letter-spacing: -0.01em; margin-bottom: 14px; max-width: 260px; }
+  .feat .rd{ font-family: 'DM Mono'; font-size: 10px; opacity: 0.75; letter-spacing: 0.14em; }
+
+  .res-item{ padding: 13px 0; border-bottom: 1px solid var(--line-soft); display: flex; gap: 13px; align-items: center; cursor: pointer; transition: padding-left 0.2s; }
+  .res-item:hover{ padding-left: 6px; }
+  .res-ic{ width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .res-ic svg{ width: 18px; height: 18px; stroke-width: 1.5; fill: none; }
+  .ri-1{ background: rgba(181, 163, 216, 0.2); }
+  .ri-1 svg{ stroke: var(--lilac); }
+  .ri-2{ background: rgba(232, 92, 111, 0.12); }
+  .ri-2 svg{ stroke: var(--rose); }
+  .ri-3{ background: rgba(240, 192, 104, 0.3); }
+  .ri-3 svg{ stroke: #A64E15; }
+  .ri-4{ background: rgba(181, 122, 142, 0.15); }
+  .ri-4 svg{ stroke: var(--berry); }
+  .res-body{ flex: 1; min-width: 0; }
+  .res-t{ font-size: 13px; color: var(--ink); margin-bottom: 3px; font-weight: 500; line-height: 1.3; }
+  .res-m{ font-family: 'DM Mono'; font-size: 9px; color: var(--ink-faint); letter-spacing: 0.1em; }
+
+  /* ============ SCREEN-9: YOU ============ */
+  .s9-head{ padding: 10px 0 14px; }
+  .s9-head h3{ font-family: 'Fraunces'; font-weight: 300; font-size: 40px; letter-spacing: -0.03em; line-height: 1; }
+  .s9-head h3 em{ font-style: italic; color: var(--rose); }
+  .s9-sub{ font-family: 'Fraunces'; font-size: 13px; font-style: italic; color: var(--ink-soft); margin-top: 6px; }
+
+  .week-card{ padding: 18px 16px; background: var(--paper-deep); border-radius: 16px; margin-top: 16px; margin-bottom: 14px; border: 1px solid var(--line-soft); }
+  .wk-lbl{ font-family: 'DM Mono'; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 12px; }
+  .wk-row{ display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+  .wk-k{ font-family: 'Fraunces'; font-size: 14px; color: var(--ink); }
+  .wk-v{ font-family: 'Fraunces'; font-style: italic; font-size: 20px; color: var(--rose); }
+  .wk-v.sage, .wk-v.lilac{ color: var(--lilac); }
+  .wk-grid{ display: flex; gap: 3px; margin-bottom: 14px; }
+  .wk-grid span{ flex: 1; height: 7px; border-radius: 2px; }
+  .wk-grid .filled{ background: var(--rose); }
+  .wk-grid .got{ background: var(--lilac); }
+  .wk-grid .empty{ background: var(--line); }
+  .wk-tip{ font-family: 'Fraunces'; font-style: italic; font-size: 12px; color: var(--berry); padding-top: 10px; border-top: 1px solid var(--line); line-height: 1.5; }
+
+  .pause-card{ padding: 16px; border-radius: 16px; background: var(--berry); color: var(--paper); margin-bottom: 12px; cursor: pointer; transition: transform 0.2s; }
+  .pause-card:hover{ transform: translateY(-1px); }
+  .pause-card h5{ font-family: 'Fraunces'; font-weight: 400; font-size: 16px; letter-spacing: -0.01em; margin-bottom: 6px; }
+  .pause-card h5 em{ font-style: italic; }
+  .pause-card p{ font-family: 'Fraunces'; font-style: italic; font-size: 12px; line-height: 1.5; opacity: 0.9; margin-bottom: 12px; }
+  .pause-card .btn{ display: inline-block; padding: 7px 14px; background: rgba(255,255,255,0.18); border-radius: 99px; font-family: 'DM Mono'; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; }
+
+  .boundary-row{ display: flex; align-items: center; justify-content: space-between; padding: 13px 15px; background: var(--paper-soft); border: 1px solid var(--line); border-radius: 13px; margin-bottom: 8px; cursor: pointer; }
+  .boundary-row .k{ font-family: 'Fraunces'; font-size: 14px; color: var(--ink); }
+  .boundary-row .k i{ font-style: italic; font-size: 11px; color: var(--ink-faint); display: block; margin-top: 3px; font-family: 'Fraunces'; line-height: 1.4; }
+
+  .reflect{ padding: 16px; border: 1px dashed var(--line); border-radius: 14px; margin-top: 12px; background: rgba(181, 122, 142, 0.04); margin-bottom: 20px; }
+  .reflect .lb{ font-family: 'DM Mono'; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 10px; }
+  .reflect .q{ font-family: 'Fraunces'; font-style: italic; font-size: 17px; line-height: 1.3; color: var(--ink); letter-spacing: -0.01em; }
+
+  /* ============ RIGHT PANEL ============ */
+  .panel{
+    align-self: stretch;
+    display: flex; flex-direction: column;
+    padding: 16px 4px;
+  }
+  .panel .you-are{
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; letter-spacing: 0.24em; text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 14px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .panel .you-are::after{
+    content: ''; flex: 1; height: 1px; background: var(--line);
+  }
+  .panel h2{
+    font-family: 'Fraunces', serif;
+    font-weight: 400; font-style: italic;
+    font-size: 42px;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    margin-bottom: 14px;
+    color: var(--ink);
+  }
+  .panel h2 em{ font-style: normal; color: var(--rose); }
+  .panel .desc{
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-size: 17px;
+    line-height: 1.45;
+    color: var(--ink-soft);
+    margin-bottom: 32px;
+    min-height: 100px;
+  }
+  .panel .desc em{ font-style: italic; color: var(--rose); }
+
+  .panel .try-label{
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; letter-spacing: 0.24em; text-transform: uppercase;
+    color: var(--rose);
+    margin-bottom: 16px;
+    font-weight: 500;
+  }
+  .panel ul.hints{
+    list-style: none;
+    display: flex; flex-direction: column; gap: 10px;
+    margin-bottom: 32px;
+  }
+  .panel ul.hints li{
+    font-size: 13px;
+    color: var(--ink);
+    line-height: 1.5;
+    padding-left: 20px;
+    position: relative;
+  }
+  .panel ul.hints li::before{
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--rose);
+    font-family: 'Fraunces';
+    font-style: italic;
+    font-weight: 500;
+  }
+  .panel ul.hints li em{ font-style: italic; color: var(--rose); }
+  .panel ul.hints li b{ font-weight: 500; color: var(--rose); }
+
+  .panel .nav-row{
+    margin-top: auto;
+    display: flex; justify-content: space-between;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+  }
+  .panel .nav-row button{
+    background: none; border: none;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 14px;
+    color: var(--ink);
+    cursor: pointer;
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 0;
+    transition: color 0.2s;
+  }
+  .panel .nav-row button:hover{ color: var(--rose); }
+  .panel .nav-row button:disabled{ opacity: 0.3; cursor: not-allowed; }
+  .panel .nav-row .pos{
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; letter-spacing: 0.18em;
+    color: var(--ink-faint);
+    align-self: center;
+  }
+  .panel .nav-row .pos b{ color: var(--rose); font-weight: 500; }
+
+  /* ============ TOAST ============ */
+  .toast{
+    position: fixed;
+    top: 32px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    background: var(--ink);
+    color: var(--paper);
+    padding: 12px 22px;
+    border-radius: 99px;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 14px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s, transform 0.3s;
+    z-index: 1000;
+    box-shadow: 0 20px 50px -20px rgba(0,0,0,0.4);
+  }
+  .toast.show{
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* ============ RESEARCH FOOTER ============ */
+  footer.research{
+    max-width: 1440px;
+    margin: 48px auto 0;
+    padding: 28px 56px 40px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+  footer.research .credit{
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: 15px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+    max-width: 560px;
+  }
+  footer.research .credit em{
+    font-style: normal;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  footer.research .meta{
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    text-align: right;
+    line-height: 1.8;
+  }
+  footer.research .meta b{ color: var(--ink); font-weight: 500; }
+
+  @media (max-width: 900px){
+    footer.research{ padding: 24px 24px 32px; }
+    footer.research .meta{ text-align: left; }
+  }
+
+  @media (max-width: 1240px){
+    .stage{ grid-template-columns: 1fr 420px; gap: 40px; }
+    .rail{ display: none; }
+  }
+  @media (max-width: 900px){
+    .demo{ padding: 24px 24px 40px; }
+    .stage{ grid-template-columns: 1fr; gap: 40px; }
+    .phone-stage{ order: 1; }
+    .panel{ order: 2; }
+  }
+</style>
+</head>
+<body>
+
+<div class="demo">
+
+  <!-- ============ HEADER ============ -->
+  <header class="demo-head">
+    <div class="brand">Hearth<em>.</em></div>
+    <div class="tag">Interactive Demo · <b>v0.5</b></div>
+  </header>
+
+  <!-- ============ STAGE ============ -->
+  <div class="stage">
+
+    <!-- LEFT RAIL: FLOW MAP -->
+    <aside class="rail">
+      <div class="eyebrow">The journey</div>
+      <h1>A <em>day</em><br>in the circle.</h1>
+      <div class="flow" id="flow">
+        <div class="flow-step" data-goto="home"><span class="n">01</span><span class="name">Morning</span><span class="arrow">›</span></div>
+        <div class="flow-step" data-goto="chat"><span class="n">02</span><span class="name">The Circle</span><span class="arrow">›</span></div>
+        <div class="flow-step" data-goto="calendar"><span class="n">03</span><span class="name">The Week</span><span class="arrow">›</span></div>
+        <div class="flow-step" data-goto="ask-form"><span class="n">04</span><span class="name">Asking</span><span class="arrow">›</span></div>
+        <div class="flow-step" data-goto="being-held"><span class="n">05</span><span class="name">Being held</span><span class="arrow">›</span></div>
+        <div class="flow-step" data-goto="hub"><span class="n">06</span><span class="name">The Change</span><span class="arrow">›</span></div>
+        <div class="flow-step" data-goto="symptom"><span class="n">07</span><span class="name">Peer voices</span><span class="arrow">›</span></div>
+        <div class="flow-step" data-goto="pocket"><span class="n">08</span><span class="name">Pocket</span><span class="arrow">›</span></div>
+        <div class="flow-step" data-goto="you"><span class="n">09</span><span class="name">You</span><span class="arrow">›</span></div>
+      </div>
+    </aside>
+
+    <!-- CENTER: PHONE -->
+    <div class="phone-stage">
+      <div class="phone">
+        <div class="phone-frame">
+
+          <!-- Universal status bar overlay — we put status inside each screen for layout reasons -->
+
+          <!-- ========== SCREEN 01: HOME ========== -->
+          <div class="screen active" data-screen="home">
+            <div class="status">
+              <span>9:41</span>
+              <span class="status-ic">
+                <svg viewBox="0 0 20 20"><path d="M2 14h2v4H2zm4-2h2v6H6zm4-3h2v9h-2zm4-3h2v12h-2z"/></svg>
+                <svg viewBox="0 0 20 20"><path d="M10 2C5.5 2 2 5 2 8c0 1 .3 2 .8 2.8L10 18l7.2-7.2c.5-.8.8-1.8.8-2.8 0-3-3.5-6-8-6z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+                <svg viewBox="0 0 26 14"><rect x="1" y="1" width="22" height="12" rx="3" fill="none" stroke="currentColor" stroke-width="1"/><rect x="3" y="3" width="16" height="8" rx="1.5"/></svg>
+              </span>
+            </div>
+            <div class="content">
+              <div class="s1-head">
+                <div class="s1-logo">Hearth<em>.</em></div>
+                <div class="s1-loc">East Lincoln</div>
+              </div>
+              <div class="s1-greet">Morning, <em>Priya.</em></div>
+              <div class="s1-sub">Soft rain today. Be gentle.</div>
+
+              <div class="care-card">
+                <div class="care-head">
+                  <span class="lbl">Your week</span>
+                  <span class="ratio">7 given · 2 received</span>
+                </div>
+                <div class="dots">
+                  <span class="d-given"></span><span class="d-given"></span><span class="d-given"></span><span class="d-given"></span><span class="d-given"></span><span class="d-given"></span><span class="d-given"></span><span class="d-got"></span><span class="d-got"></span><span class="d-empty"></span>
+                </div>
+                <div class="care-note">Worth tending to. Ask someone for something small?</div>
+              </div>
+
+              <div class="sec-title"><h4>Today's Circle</h4><span class="count">3 nearby</span></div>
+
+              <div class="ask-card" data-ask="amara">
+                <div class="avatar av-1">A</div>
+                <div class="ask-body">
+                  <div class="ask-name">Amara · <span class="what">school pickup</span></div>
+                  <div class="ask-meta">3:15 PM · 1.2 MI · 2 FILLING IN</div>
+                </div>
+                <div class="ask-act">join</div>
+              </div>
+
+              <div class="ask-card" data-ask="farida">
+                <div class="avatar av-2">F</div>
+                <div class="ask-body">
+                  <div class="ask-name">Farida · <span class="what">too much khichdi</span></div>
+                  <div class="ask-meta">TONIGHT · 0.4 MI · 4 DROPPING IN</div>
+                </div>
+                <div class="ask-act">save me some</div>
+              </div>
+
+              <div class="ask-card urgent" data-ask="ruth">
+                <div class="avatar av-3">R</div>
+                <div class="ask-body">
+                  <div class="ask-name">Ruth · <span class="what">mom had a fall</span></div>
+                  <div class="ask-meta"><span class="urg">URGENT</span> · 5–7 PM · 0 YET</div>
+                </div>
+                <div class="ask-act">here</div>
+              </div>
+            </div>
+            <div class="tabbar">
+              <div class="tab active" data-tab="home"><svg viewBox="0 0 24 24"><path d="M3 12L12 4l9 8v8a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>Home</div>
+              <div class="tab" data-tab="calendar"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>Calendar</div>
+              <div class="tab" data-tab="chat"><svg viewBox="0 0 24 24"><path d="M21 11a9 9 0 0 1-14 7l-4 1 1-4a9 9 0 1 1 17-4z"/></svg>Chat</div>
+              <div class="tab" data-tab="hub"><svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.7 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>Hub</div>
+              <div class="tab" data-tab="you"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>You</div>
+            </div>
+          </div>
+
+          <!-- ========== SCREEN 02: CHAT ========== -->
+          <div class="screen" data-screen="chat">
+            <div class="status">
+              <span>9:42</span>
+              <span class="status-ic">
+                <svg viewBox="0 0 20 20"><path d="M2 14h2v4H2zm4-2h2v6H6zm4-3h2v9h-2zm4-3h2v12h-2z"/></svg>
+                <svg viewBox="0 0 20 20"><path d="M10 2C5.5 2 2 5 2 8c0 1 .3 2 .8 2.8L10 18l7.2-7.2c.5-.8.8-1.8.8-2.8 0-3-3.5-6-8-6z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+                <svg viewBox="0 0 26 14"><rect x="1" y="1" width="22" height="12" rx="3" fill="none" stroke="currentColor" stroke-width="1"/><rect x="3" y="3" width="16" height="8" rx="1.5"/></svg>
+              </span>
+            </div>
+            <div class="content" style="display: flex; flex-direction: column; padding-bottom: 4px;">
+              <div class="s2-head">
+                <h3>East Lincoln <em>Circle</em></h3>
+                <div class="sub">42 NEIGHBORS · 5 ACTIVE NOW</div>
+              </div>
+
+              <div class="date-div">TODAY · APR 20</div>
+
+              <div class="msg">
+                <div class="av av-4">C</div>
+                <div class="msg-bub">
+                  <div class="msg-name">CHIDINMA</div>
+                  <div class="msg-text">Walking to the market at 8 — anyone want to come? I can wait 🌿</div>
+                  <div class="msg-react"><span>💐 3</span><span>🚶 2</span></div>
+                </div>
+              </div>
+
+              <div class="msg">
+                <div class="av av-5">M</div>
+                <div class="voice-msg" id="voiceMsg">
+                  <div class="play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+                  <div class="waveform">
+                    <span style="height: 4px;"></span><span style="height: 10px;"></span><span style="height: 14px;"></span><span style="height: 8px;"></span><span style="height: 16px;"></span><span style="height: 6px;"></span><span style="height: 12px;"></span><span style="height: 14px;"></span><span style="height: 8px;"></span><span style="height: 4px;"></span><span style="height: 10px;"></span><span style="height: 14px;"></span><span style="height: 6px;"></span><span style="height: 8px;"></span>
+                  </div>
+                  <span class="v-time">0:23</span>
+                </div>
+              </div>
+
+              <div class="msg">
+                <div class="av av-2">Y</div>
+                <div class="img-msg">
+                  <div class="ic">
+                    <svg viewBox="0 0 64 64"><path d="M20 40c0-10 8-18 18-18s18 8 18 18M12 44h40M24 28c-4 0-8 4-8 10 0 3 2 6 6 6h28"/></svg>
+                  </div>
+                  <div class="cap">Soup's on. Come by if you want.</div>
+                </div>
+              </div>
+
+              <div class="msg own">
+                <div class="msg-bub">
+                  <div class="msg-text">Sunday porch hang? I'll bring tea.</div>
+                </div>
+              </div>
+
+              <div class="chat-input">
+                <svg viewBox="0 0 24 24" class="mic"><rect x="9" y="2" width="6" height="13" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 19v3"/></svg>
+                <span class="ph">Write something warm…</span>
+                <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 5V3M17 5V3M3 9h18"/></svg>
+              </div>
+            </div>
+            <div class="tabbar">
+              <div class="tab" data-tab="home"><svg viewBox="0 0 24 24"><path d="M3 12L12 4l9 8v8a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>Home</div>
+              <div class="tab" data-tab="calendar"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>Calendar</div>
+              <div class="tab active" data-tab="chat"><svg viewBox="0 0 24 24"><path d="M21 11a9 9 0 0 1-14 7l-4 1 1-4a9 9 0 1 1 17-4z"/></svg>Chat</div>
+              <div class="tab" data-tab="hub"><svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.7 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>Hub</div>
+              <div class="tab" data-tab="you"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>You</div>
+            </div>
+          </div>
+
+          <!-- ========== SCREEN 03: CALENDAR ========== -->
+          <div class="screen" data-screen="calendar">
+            <div class="status">
+              <span>9:43</span>
+              <span class="status-ic">
+                <svg viewBox="0 0 20 20"><path d="M2 14h2v4H2zm4-2h2v6H6zm4-3h2v9h-2zm4-3h2v12h-2z"/></svg>
+                <svg viewBox="0 0 20 20"><path d="M10 2C5.5 2 2 5 2 8c0 1 .3 2 .8 2.8L10 18l7.2-7.2c.5-.8.8-1.8.8-2.8 0-3-3.5-6-8-6z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+                <svg viewBox="0 0 26 14"><rect x="1" y="1" width="22" height="12" rx="3" fill="none" stroke="currentColor" stroke-width="1"/><rect x="3" y="3" width="16" height="8" rx="1.5"/></svg>
+              </span>
+            </div>
+            <div class="content">
+              <div class="s3-head">
+                <h3>April · <em>Week 16</em></h3>
+                <div class="sub">5 ASKS · 3 FILLED · 1 URGENT</div>
+              </div>
+
+              <div class="week-strip">
+                <div class="day-col"><div class="d-name">M</div><div class="d-num">14</div><div class="d-pip"><span style="background:var(--lilac);"></span></div></div>
+                <div class="day-col"><div class="d-name">T</div><div class="d-num">15</div><div class="d-pip"><span style="background:var(--lilac);"></span></div></div>
+                <div class="day-col"><div class="d-name">W</div><div class="d-num">16</div><div class="d-pip"><span style="background:var(--rose);"></span></div></div>
+                <div class="day-col"><div class="d-name">T</div><div class="d-num">17</div><div class="d-pip"><span style="background:var(--apricot);"></span></div></div>
+                <div class="day-col"><div class="d-name">F</div><div class="d-num">18</div><div class="d-pip"><span style="background:var(--apricot);"></span></div></div>
+                <div class="day-col"><div class="d-name">S</div><div class="d-num">19</div></div>
+                <div class="day-col today"><div class="d-name">S</div><div class="d-num">20</div></div>
+              </div>
+
+              <div class="cal-list">
+                <div class="cal-block cb-filled">
+                  <div class="time">MON · 3:00 – 5:00 PM</div>
+                  <div class="ttl">School pickup — Amara's kids</div>
+                  <div class="sta"><span class="dot"></span>filled · Priya + Jeong-hee</div>
+                </div>
+                <div class="cal-block cb-filled">
+                  <div class="time">TUE · 9:00 – 11:00 AM</div>
+                  <div class="ttl">Doctor's visit company — Devi</div>
+                  <div class="sta"><span class="dot"></span>filled · Chidinma</div>
+                </div>
+                <div class="cal-block cb-urgent">
+                  <div class="time">WED · 5:00 – 7:00 PM</div>
+                  <div class="ttl">Ruth's mom — keep her company</div>
+                  <div class="sta"><span class="dot"></span>urgent · open · 0 responses</div>
+                </div>
+                <div class="cal-block cb-open">
+                  <div class="time">FRI · 6:00 PM</div>
+                  <div class="ttl">Porch hang · bring tea if you can</div>
+                  <div class="sta"><span class="dot"></span>open · host: Priya</div>
+                </div>
+                <div class="cal-block cb-open">
+                  <div class="time">SAT · 10:00 AM</div>
+                  <div class="ttl">Groceries for Devi (post-op)</div>
+                  <div class="sta"><span class="dot"></span>open · 45 min</div>
+                </div>
+              </div>
+            </div>
+            <div class="fab" id="fabAsk">ask</div>
+            <div class="tabbar">
+              <div class="tab" data-tab="home"><svg viewBox="0 0 24 24"><path d="M3 12L12 4l9 8v8a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>Home</div>
+              <div class="tab active" data-tab="calendar"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>Calendar</div>
+              <div class="tab" data-tab="chat"><svg viewBox="0 0 24 24"><path d="M21 11a9 9 0 0 1-14 7l-4 1 1-4a9 9 0 1 1 17-4z"/></svg>Chat</div>
+              <div class="tab" data-tab="hub"><svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.7 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>Hub</div>
+              <div class="tab" data-tab="you"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>You</div>
+            </div>
+          </div>
+
+          <!-- ========== SCREEN 04: ASK FORM ========== -->
+          <div class="screen" data-screen="ask-form">
+            <div class="status">
+              <span>9:44</span>
+              <span class="status-ic">
+                <svg viewBox="0 0 20 20"><path d="M2 14h2v4H2zm4-2h2v6H6zm4-3h2v9h-2zm4-3h2v12h-2z"/></svg>
+                <svg viewBox="0 0 20 20"><path d="M10 2C5.5 2 2 5 2 8c0 1 .3 2 .8 2.8L10 18l7.2-7.2c.5-.8.8-1.8.8-2.8 0-3-3.5-6-8-6z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+                <svg viewBox="0 0 26 14"><rect x="1" y="1" width="22" height="12" rx="3" fill="none" stroke="currentColor" stroke-width="1"/><rect x="3" y="3" width="16" height="8" rx="1.5"/></svg>
+              </span>
+            </div>
+            <div class="content">
+              <div class="nav-bar">
+                <div class="back" data-back="calendar">‹</div>
+                <div class="title">Ask for help</div>
+                <div style="width: 32px;"></div>
+              </div>
+
+              <div class="s4-prompt">It's okay. <em>We've all needed it.</em></div>
+              <div class="s4-sub">Be as specific as feels safe.</div>
+
+              <div class="form-lbl">What do you need?</div>
+              <div class="chip-row" data-group="need">
+                <span class="chip on">caregiving</span>
+                <span class="chip">a ride</span>
+                <span class="chip">a meal</span>
+                <span class="chip">company</span>
+                <span class="chip">an errand</span>
+                <span class="chip">a listening ear</span>
+              </div>
+
+              <div class="form-lbl">When?</div>
+              <div class="chip-row" data-group="when">
+                <span class="chip">today</span>
+                <span class="chip on">tomorrow · 5–7pm</span>
+                <span class="chip">this week</span>
+              </div>
+
+              <div class="form-lbl">How many can help?</div>
+              <div class="chip-row" data-group="count">
+                <span class="chip">just one</span>
+                <span class="chip on">two of us</span>
+                <span class="chip">a few</span>
+                <span class="chip">as many as can</span>
+              </div>
+
+              <div class="priv-row" data-toggle>
+                <div class="k">Mark as urgent</div>
+                <div class="toggle"></div>
+              </div>
+              <div class="priv-row" data-toggle>
+                <div class="k">Approve each helper<i style="font-family:'Fraunces';font-style:italic;font-size:10px;color:var(--ink-faint);display:block;margin-top:3px;">you choose who joins</i></div>
+                <div class="toggle on"></div>
+              </div>
+              <div class="priv-row">
+                <div class="k">Who can see this?</div>
+                <div class="v">my circle ›</div>
+              </div>
+              <div class="priv-row" data-toggle>
+                <div class="k">Post anonymously</div>
+                <div class="toggle on"></div>
+              </div>
+
+              <div class="anon-note">Anonymous asks show your block, not your name. Your circle can still respond — they just won't know it was you until you're ready.</div>
+
+              <div class="submit-btn" id="postAsk">post softly</div>
+            </div>
+          </div>
+
+          <!-- ========== SCREEN 05: BEING HELD ========== -->
+          <div class="screen" data-screen="being-held">
+            <div class="status">
+              <span>9:45</span>
+              <span class="status-ic">
+                <svg viewBox="0 0 20 20"><path d="M2 14h2v4H2zm4-2h2v6H6zm4-3h2v9h-2zm4-3h2v12h-2z"/></svg>
+                <svg viewBox="0 0 20 20"><path d="M10 2C5.5 2 2 5 2 8c0 1 .3 2 .8 2.8L10 18l7.2-7.2c.5-.8.8-1.8.8-2.8 0-3-3.5-6-8-6z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+                <svg viewBox="0 0 26 14"><rect x="1" y="1" width="22" height="12" rx="3" fill="none" stroke="currentColor" stroke-width="1"/><rect x="3" y="3" width="16" height="8" rx="1.5"/></svg>
+              </span>
+            </div>
+            <div class="content">
+              <div class="nav-bar">
+                <div class="back" data-back="home">‹</div>
+                <div class="title">Your ask</div>
+                <div class="right">edit</div>
+              </div>
+
+              <div class="s5-eyebrow">Posted 2 hrs ago · anonymous</div>
+              <div class="s5-title">Three women <em>are here.</em></div>
+              <div class="s5-sub">Your circle, your choice. Take your time.</div>
+
+              <div class="your-ask">
+                <div class="tg">YOUR ASK</div>
+                <div class="wh">"Could two of you sit with my mother tomorrow, 5–7pm? She's had a scare."</div>
+                <div class="mt">
+                  <span>📍 0.3 MI</span>
+                  <span>⌁ 2 HRS</span>
+                  <span>◎ 2 SLOTS</span>
+                </div>
+              </div>
+
+              <div class="slot-bar">
+                <div class="slot-head">
+                  <span id="slotText">2 slots · 1 confirmed · 1 left</span>
+                  <span class="lf" id="slotLeft">half full</span>
+                </div>
+                <div class="slot-track">
+                  <div class="slot-fill" id="slotFill" style="width: 50%;"></div>
+                </div>
+              </div>
+
+              <div class="responses-head">
+                <h4>Confirmed</h4>
+                <span class="c" id="confirmedCount">● 1 OF 2</span>
+              </div>
+
+              <div id="confirmedList">
+                <div class="resp-card confirmed">
+                  <div class="avatar av-1">J</div>
+                  <div class="resp-body">
+                    <div class="resp-head">
+                      <span class="resp-nm">Jeong-hee</span>
+                      <span class="confirmed-tag">✓ SET</span>
+                    </div>
+                    <div class="resp-msg">"I'll come at 5. Bringing a book so she doesn't have to talk."</div>
+                    <div class="resp-trust">
+                      <span class="trust-tag">NEIGHBOR · 2 YRS</span>
+                      <span class="trust-tag butter">NURSE</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="responses-head" style="margin-top: 18px;" id="pendingHead">
+                <h4>Pending <em>your yes</em></h4>
+                <span class="c pending" id="pendingCount">● 2 WAITING</span>
+              </div>
+
+              <div id="pendingList">
+                <div class="resp-card" data-person="farida">
+                  <div class="avatar av-2">F</div>
+                  <div class="resp-body">
+                    <div class="resp-head">
+                      <span class="resp-nm">Farida</span>
+                      <span class="resp-prox">0.4 MI · 3 SHARED</span>
+                    </div>
+                    <div class="resp-msg">"I'll bring dinner at 6. No need to eat with us — tin goes in your fridge."</div>
+                    <div class="resp-trust">
+                      <span class="trust-tag plum">OFTEN HELPS</span>
+                    </div>
+                    <div class="resp-actions">
+                      <span class="act-approve" data-action="approve">count you in</span>
+                      <span class="act-decline" data-action="decline">maybe next time</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="resp-card" data-person="chidinma">
+                  <div class="avatar av-4">C</div>
+                  <div class="resp-body">
+                    <div class="resp-head">
+                      <span class="resp-nm">Chidinma</span>
+                      <span class="resp-prox">1.1 MI · 4 SHARED</span>
+                    </div>
+                    <div class="resp-msg">"Calling at 6:30 just to check in. No pressure to pick up."</div>
+                    <div class="resp-trust">
+                      <span class="trust-tag">NEIGHBOR · 5 YRS</span>
+                    </div>
+                    <div class="resp-actions">
+                      <span class="act-approve" data-action="approve">count you in</span>
+                      <span class="act-decline" data-action="decline">maybe next time</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="full-notice" id="fullNotice">
+                Both slots are full. Your circle will take it from here.
+              </div>
+            </div>
+          </div>
+
+          <!-- ========== SCREEN 06: HUB ========== -->
+          <div class="screen" data-screen="hub">
+            <div class="status">
+              <span>9:46</span>
+              <span class="status-ic">
+                <svg viewBox="0 0 20 20"><path d="M2 14h2v4H2zm4-2h2v6H6zm4-3h2v9h-2zm4-3h2v12h-2z"/></svg>
+                <svg viewBox="0 0 20 20"><path d="M10 2C5.5 2 2 5 2 8c0 1 .3 2 .8 2.8L10 18l7.2-7.2c.5-.8.8-1.8.8-2.8 0-3-3.5-6-8-6z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+                <svg viewBox="0 0 26 14"><rect x="1" y="1" width="22" height="12" rx="3" fill="none" stroke="currentColor" stroke-width="1"/><rect x="3" y="3" width="16" height="8" rx="1.5"/></svg>
+              </span>
+            </div>
+            <div class="content">
+              <div class="s6-head">
+                <h3>The <em>Change</em></h3>
+                <div class="s6-sub">What's visiting today?</div>
+              </div>
+
+              <div class="feel-row" data-group="feel">
+                <span class="feel sel">warm</span>
+                <span class="feel">foggy</span>
+                <span class="feel">sleepless</span>
+                <span class="feel">sore</span>
+                <span class="feel">joyful</span>
+                <span class="feel">tender</span>
+              </div>
+
+              <div class="sym-grid">
+                <div class="sym-card sc-1" data-sym="hot-flashes">
+                  <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="var(--rose)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2s-4 5-4 9a4 4 0 0 0 8 0c0-4-4-9-4-9z"/><path d="M8 16a4 4 0 0 0 8 0"/></svg>
+                  <h5>Hot flashes</h5>
+                  <div class="n">37 SHARED</div>
+                </div>
+                <div class="sym-card sc-2">
+                  <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="var(--berry)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+                  <h5>Night sweats</h5>
+                  <div class="n">24 SHARED</div>
+                </div>
+                <div class="sym-card sc-3">
+                  <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="#A64E15" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="12" r="3"/><circle cx="16.5" cy="12" r="3"/><path d="M4 7c1.5-1 3-1 4 0M16 7c1-1 2.5-1 4 0"/></svg>
+                  <h5>Brain fog</h5>
+                  <div class="n">19 SHARED</div>
+                </div>
+                <div class="sym-card sc-4">
+                  <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="var(--lilac)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M6 9a6 6 0 0 1 12 0"/><path d="M6 15a6 6 0 0 0 12 0"/></svg>
+                  <h5>Mood shifts</h5>
+                  <div class="n">31 SHARED</div>
+                </div>
+                <div class="sym-card sc-5">
+                  <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="var(--rose)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/><circle cx="18" cy="6" r="1" fill="var(--rose)"/><circle cx="15" cy="3" r="0.5" fill="var(--rose)"/></svg>
+                  <h5>Sleep trouble</h5>
+                  <div class="n">42 SHARED</div>
+                </div>
+                <div class="sym-card sc-6">
+                  <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="var(--berry)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 4v2M12 18v2M4 12h2M18 12h2M6 6l1.5 1.5M16.5 16.5L18 18M6 18l1.5-1.5M16.5 7.5L18 6"/></svg>
+                  <h5>Skin dryness</h5>
+                  <div class="n">12 SHARED</div>
+                </div>
+              </div>
+
+              <div class="hub-pocket" data-goto="pocket">
+                <div>
+                  <h6>Pocket</h6>
+                  <p>Things worth carrying with you →</p>
+                </div>
+                <div class="arr">›</div>
+              </div>
+            </div>
+            <div class="tabbar">
+              <div class="tab" data-tab="home"><svg viewBox="0 0 24 24"><path d="M3 12L12 4l9 8v8a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>Home</div>
+              <div class="tab" data-tab="calendar"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>Calendar</div>
+              <div class="tab" data-tab="chat"><svg viewBox="0 0 24 24"><path d="M21 11a9 9 0 0 1-14 7l-4 1 1-4a9 9 0 1 1 17-4z"/></svg>Chat</div>
+              <div class="tab active" data-tab="hub"><svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.7 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>Hub</div>
+              <div class="tab" data-tab="you"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>You</div>
+            </div>
+          </div>
+
+          <!-- ========== SCREEN 07: SYMPTOM DETAIL ========== -->
+          <div class="screen" data-screen="symptom">
+            <div class="status">
+              <span>9:47</span>
+              <span class="status-ic">
+                <svg viewBox="0 0 20 20"><path d="M2 14h2v4H2zm4-2h2v6H6zm4-3h2v9h-2zm4-3h2v12h-2z"/></svg>
+                <svg viewBox="0 0 20 20"><path d="M10 2C5.5 2 2 5 2 8c0 1 .3 2 .8 2.8L10 18l7.2-7.2c.5-.8.8-1.8.8-2.8 0-3-3.5-6-8-6z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+                <svg viewBox="0 0 26 14"><rect x="1" y="1" width="22" height="12" rx="3" fill="none" stroke="currentColor" stroke-width="1"/><rect x="3" y="3" width="16" height="8" rx="1.5"/></svg>
+              </span>
+            </div>
+            <div class="content">
+              <div class="nav-bar">
+                <div class="back" data-back="hub">‹</div>
+                <div></div>
+                <div class="right">+ to pocket</div>
+              </div>
+
+              <div class="s7-eyebrow">SYMPTOM · 37 NEIGHBORS SHARING</div>
+              <div class="s7-title">Hot <em>flashes.</em></div>
+              <div class="s7-meta">Your body recalibrating. Not forever.</div>
+
+              <div class="tabs" data-group="detail-tab">
+                <div class="t" data-tab-content="expert">Expert</div>
+                <div class="t on" data-tab-content="peer">Peer</div>
+                <div class="t" data-tab-content="audio">Audio</div>
+              </div>
+
+              <!-- Expert tab -->
+              <div class="tab-content" data-tab-panel="expert">
+                <div class="expert-card">
+                  <div class="ex-head">
+                    <div class="ex-av">R</div>
+                    <div class="ex-info">
+                      <div class="nm">Dr. Ayesha Rahman</div>
+                      <div class="ti">Endocrinologist · Reviewed</div>
+                    </div>
+                  </div>
+                  <p>Hot flashes are your body's thermostat being recalibrated. They can come on fast, last a few minutes, and pass. Keep layers loose. Cool water on wrists. Track what sets them off — some find coffee or wine trigger them.</p>
+                </div>
+                <div class="expert-card" style="background: var(--rose-whisper); border: 1px solid var(--rose-soft);">
+                  <div class="ex-head">
+                    <div class="ex-av" style="background: var(--rose);">M</div>
+                    <div class="ex-info">
+                      <div class="nm">Dr. Meena Iyer</div>
+                      <div class="ti">GP · East Lincoln Clinic</div>
+                    </div>
+                  </div>
+                  <p>If flashes are disrupting your sleep or work, please come in. We have options — hormonal, lifestyle, herbal. You don't have to just endure this.</p>
+                </div>
+              </div>
+
+              <!-- Peer tab (default visible) -->
+              <div class="tab-content on" data-tab-panel="peer">
+                <div class="peer-card">
+                  <div class="av av-1">J</div>
+                  <div class="peer-body">
+                    <div class="peer-q">"A cotton scarf in my bag. Dab, don't rub. Honestly a lifeline at work."</div>
+                    <div class="peer-nm">
+                      <span>JEONG-HEE · 2 BLOCKS OVER</span>
+                      <span class="rec">● 3D AGO</span>
+                    </div>
+                    <div class="peer-react">
+                      <span>💛 12</span>
+                      <span>📌 6</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="peer-card">
+                  <div class="av av-3">I</div>
+                  <div class="peer-body">
+                    <div class="peer-q">"I just name it in meetings. 'Give me a second, I'm having a flash.' Shorter than apologizing."</div>
+                    <div class="peer-nm">
+                      <span>ISABEL · SAME BUILDING</span>
+                      <span class="rec">● 1W AGO</span>
+                    </div>
+                    <div class="peer-react">
+                      <span>💛 24</span>
+                      <span>📌 15</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="peer-card">
+                  <div class="av av-4">A</div>
+                  <div class="peer-body">
+                    <div class="peer-q">"Frozen grapes in a tiny bowl on my desk. Sounds silly. Works."</div>
+                    <div class="peer-nm">
+                      <span>AMARA · 1.2 MI</span>
+                    </div>
+                    <div class="peer-react">
+                      <span>💛 8</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Audio tab -->
+              <div class="tab-content" data-tab-panel="audio">
+                <div class="peer-card audio-card">
+                  <div class="av">D</div>
+                  <div class="peer-body">
+                    <div class="play-row">
+                      <div class="play-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+                      <div class="play-wave">
+                        <span style="height: 4px;"></span><span style="height: 10px;"></span><span style="height: 14px;"></span><span style="height: 6px;"></span><span style="height: 12px;"></span><span style="height: 8px;"></span><span style="height: 16px;"></span><span style="height: 4px;"></span><span style="height: 10px;"></span><span style="height: 14px;"></span><span style="height: 8px;"></span><span style="height: 6px;"></span>
+                      </div>
+                      <span class="play-time">1:12</span>
+                    </div>
+                    <div class="vt">"How I explain it to my boss, without apologizing."</div>
+                    <div class="peer-nm" style="margin-top: 6px;">
+                      <span>DEVI · 0.3 MI</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="peer-card audio-card">
+                  <div class="av">M</div>
+                  <div class="peer-body">
+                    <div class="play-row">
+                      <div class="play-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+                      <div class="play-wave">
+                        <span style="height: 8px;"></span><span style="height: 14px;"></span><span style="height: 4px;"></span><span style="height: 10px;"></span><span style="height: 16px;"></span><span style="height: 6px;"></span><span style="height: 12px;"></span><span style="height: 10px;"></span><span style="height: 4px;"></span><span style="height: 14px;"></span>
+                      </div>
+                      <span class="play-time">0:48</span>
+                    </div>
+                    <div class="vt">"The night my husband finally understood."</div>
+                    <div class="peer-nm" style="margin-top: 6px;">
+                      <span>MARISOL · 0.7 MI</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ========== SCREEN 08: POCKET ========== -->
+          <div class="screen" data-screen="pocket">
+            <div class="status">
+              <span>9:48</span>
+              <span class="status-ic">
+                <svg viewBox="0 0 20 20"><path d="M2 14h2v4H2zm4-2h2v6H6zm4-3h2v9h-2zm4-3h2v12h-2z"/></svg>
+                <svg viewBox="0 0 20 20"><path d="M10 2C5.5 2 2 5 2 8c0 1 .3 2 .8 2.8L10 18l7.2-7.2c.5-.8.8-1.8.8-2.8 0-3-3.5-6-8-6z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+                <svg viewBox="0 0 26 14"><rect x="1" y="1" width="22" height="12" rx="3" fill="none" stroke="currentColor" stroke-width="1"/><rect x="3" y="3" width="16" height="8" rx="1.5"/></svg>
+              </span>
+            </div>
+            <div class="content">
+              <div class="nav-bar">
+                <div class="back" data-back="hub">‹</div>
+                <div class="title">Pocket</div>
+                <div style="width: 32px;"></div>
+              </div>
+
+              <div class="s8-head">
+                <h3><em>Pocket</em></h3>
+                <div class="s8-sub">Things worth carrying with you.</div>
+              </div>
+
+              <div class="col-row" data-group="cat">
+                <span class="col on">All</span>
+                <span class="col">Health</span>
+                <span class="col">Care</span>
+                <span class="col">Work</span>
+                <span class="col">Rest</span>
+              </div>
+
+              <div class="feat">
+                <div class="typ">FEATURED · ESSAY · 7 MIN</div>
+                <h5>The letter I wish I'd written my mother.</h5>
+                <div class="rd">— NOOR HASSAN</div>
+              </div>
+
+              <div class="res-item">
+                <div class="res-ic ri-1">
+                  <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.2 16.2l2.8 2.8M2 12h4M18 12h4"/><circle cx="12" cy="12" r="4"/></svg>
+                </div>
+                <div class="res-body">
+                  <div class="res-t">Night Shifts — caregiving burnout</div>
+                  <div class="res-m">PODCAST · 38 MIN</div>
+                </div>
+              </div>
+
+              <div class="res-item">
+                <div class="res-ic ri-2">
+                  <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="1"/><path d="M4 9h16M9 4v16"/></svg>
+                </div>
+                <div class="res-body">
+                  <div class="res-t">Knowing when to say: I can't.</div>
+                  <div class="res-m">ARTICLE · 4 MIN</div>
+                </div>
+              </div>
+
+              <div class="res-item">
+                <div class="res-ic ri-3">
+                  <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M10 8v8l6-4z"/></svg>
+                </div>
+                <div class="res-body">
+                  <div class="res-t">A gentle strength routine for tired shoulders.</div>
+                  <div class="res-m">VIDEO · 12 MIN</div>
+                </div>
+              </div>
+
+              <div class="res-item">
+                <div class="res-ic ri-4">
+                  <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l5 5v15H6z"/><path d="M15 2v5h5M9 13h6M9 17h6"/></svg>
+                </div>
+                <div class="res-body">
+                  <div class="res-t">Menopause at work — a conversation guide.</div>
+                  <div class="res-m">PDF · 10 PAGES</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ========== SCREEN 09: YOU ========== -->
+          <div class="screen" data-screen="you">
+            <div class="status">
+              <span>9:49</span>
+              <span class="status-ic">
+                <svg viewBox="0 0 20 20"><path d="M2 14h2v4H2zm4-2h2v6H6zm4-3h2v9h-2zm4-3h2v12h-2z"/></svg>
+                <svg viewBox="0 0 20 20"><path d="M10 2C5.5 2 2 5 2 8c0 1 .3 2 .8 2.8L10 18l7.2-7.2c.5-.8.8-1.8.8-2.8 0-3-3.5-6-8-6z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+                <svg viewBox="0 0 26 14"><rect x="1" y="1" width="22" height="12" rx="3" fill="none" stroke="currentColor" stroke-width="1"/><rect x="3" y="3" width="16" height="8" rx="1.5"/></svg>
+              </span>
+            </div>
+            <div class="content">
+              <div class="s9-head">
+                <h3><em>You.</em></h3>
+                <div class="s9-sub">No metrics. No streak. Just a mirror.</div>
+              </div>
+
+              <div class="week-card">
+                <div class="wk-lbl">THIS WEEK</div>
+                <div class="wk-row">
+                  <span class="wk-k">Hours given</span>
+                  <span class="wk-v">7</span>
+                </div>
+                <div class="wk-grid">
+                  <span class="filled"></span><span class="filled"></span><span class="filled"></span><span class="filled"></span><span class="filled"></span><span class="filled"></span><span class="filled"></span><span class="empty"></span><span class="empty"></span><span class="empty"></span>
+                </div>
+                <div class="wk-row">
+                  <span class="wk-k">Hours received</span>
+                  <span class="wk-v lilac">2</span>
+                </div>
+                <div class="wk-grid">
+                  <span class="got"></span><span class="got"></span><span class="empty"></span><span class="empty"></span><span class="empty"></span><span class="empty"></span><span class="empty"></span><span class="empty"></span><span class="empty"></span><span class="empty"></span>
+                </div>
+                <div class="wk-tip">You've held four asks. Two for your mother. One for a neighbor's child. One for Ruth. Has anyone held you?</div>
+              </div>
+
+              <div class="pause-card">
+                <h5>Pause <em>for a week.</em></h5>
+                <p>Step out of the calendar. No pings. Your circle will understand — they've paused too.</p>
+                <div class="btn">begin pause</div>
+              </div>
+
+              <div class="boundary-row" data-toggle>
+                <div class="k">Invisible mode<i>read the chat · nobody sees you typing</i></div>
+                <div class="toggle on"></div>
+              </div>
+
+              <div class="boundary-row" data-toggle>
+                <div class="k">Only asks within 0.5 mi<i>keep the circle tight</i></div>
+                <div class="toggle"></div>
+              </div>
+
+              <div class="reflect">
+                <div class="lb">PRIVATE · ONLY YOU SEE THIS</div>
+                <div class="q">One thing I held this week that no one saw?</div>
+              </div>
+            </div>
+            <div class="tabbar">
+              <div class="tab" data-tab="home"><svg viewBox="0 0 24 24"><path d="M3 12L12 4l9 8v8a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>Home</div>
+              <div class="tab" data-tab="calendar"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>Calendar</div>
+              <div class="tab" data-tab="chat"><svg viewBox="0 0 24 24"><path d="M21 11a9 9 0 0 1-14 7l-4 1 1-4a9 9 0 1 1 17-4z"/></svg>Chat</div>
+              <div class="tab" data-tab="hub"><svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.7 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>Hub</div>
+              <div class="tab active" data-tab="you"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>You</div>
+            </div>
+          </div>
+
+        </div>
+        <div class="home-ind"></div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL: YOU-ARE-HERE + HINTS -->
+    <aside class="panel">
+      <div class="you-are">You're on</div>
+      <h2 id="panelTitle">Morning.</h2>
+      <p class="desc" id="panelDesc">The first thing on screen isn't a feed — it's your balance. Seven hours given this week, two received. The copy is an invitation, never a scold.</p>
+
+      <div class="try-label">Try this</div>
+      <ul class="hints" id="panelHints">
+        <li>Tap the urgent ask (Ruth's mom) to volunteer</li>
+        <li>Tap <b>Calendar</b> in the bottom bar to see the week</li>
+        <li>Or jump to any screen in the flow map →</li>
+      </ul>
+
+      <div class="nav-row">
+        <button id="btnPrev" disabled>‹ back</button>
+        <span class="pos"><b id="posCur">01</b> / 09</span>
+        <button id="btnNext">next ›</button>
+      </div>
+    </aside>
+
+  </div>
+</div>
+
+<footer class="research">
+  <div class="credit">
+    <em>Hearth</em> — a design prototype exploring localized mutual aid, caregiving support, and menopause symptom management among working women.
+  </div>
+  <div class="meta">
+    <b>CARE Lab</b><br>
+    Emory University<br>
+    Design provocation · v0.5
+  </div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============ SCREEN CONFIG ============
+const screens = [
+  { id: 'home', title: 'Morning.', desc: "The first thing on screen isn't a feed — it's <em>your</em> balance. Seven hours given, two received. Copy is an invitation, never a scold.",
+    hints: ['Tap the urgent ask <b>Ruth</b> to volunteer', 'Tap <b>Calendar</b> to see the week', 'Tap the flow map on the left to jump anywhere'] },
+  { id: 'chat', title: 'The Circle.', desc: "42 neighbors. Text, voice notes, photos all inline. The microphone is <em>rose</em> — we want women to speak, not just type.",
+    hints: ['Play the <b>voice note</b> from Meera', 'React to Chidinma\'s market invite', 'Scroll up — find your own message at the bottom'] },
+  { id: 'calendar', title: 'The Week.', desc: "Asks aren't posts — they're <em>time</em>. Filled slots name their volunteers. Open slots are dashed: a visual form of <em>not yet</em>.",
+    hints: ['Tap the <b>ask</b> button to post a need', 'Notice the urgent pip on Wednesday', 'Dashed borders mean the slot is still open'] },
+  { id: 'ask-form', title: 'Asking.', desc: "Copy does the heaviest lifting: <em>It's okay. We've all needed it.</em> — pre-empting shame before the form begins.",
+    hints: ['Tap the chips to set your need', 'Toggle <b>Approve each helper</b> on or off', 'Hit <b>post softly</b> when you\'re ready'] },
+  { id: 'being-held', title: 'Being held.', desc: "The hardest screen to design: <em>receiving</em>, and <em>choosing</em>. You pick who fills each slot.",
+    hints: ['Tap <b>count you in</b> to approve Farida', 'Try <b>maybe next time</b> on Chidinma', 'Watch the slot bar fill as you approve'] },
+  { id: 'hub', title: 'The Change.', desc: "The only screen drenched in berry. The entry question isn't <em>what symptom?</em> but <em>what's visiting today?</em>",
+    hints: ['Tap a feeling chip: warm, foggy, sleepless…', 'Tap <b>Hot flashes</b> to see peer voices', 'Scroll down for <b>Pocket</b> — curated resources'] },
+  { id: 'symptom', title: 'Peer voices.', desc: "Three tabs: Expert (paraphrased doctor), <em>Peer</em> (testimony in serif italic), Audio (neighbors who've been through it).",
+    hints: ['Switch to the <b>Expert</b> tab', 'Try the <b>Audio</b> tab for voice notes', 'React with 💛 on any peer tip'] },
+  { id: 'pocket', title: 'Pocket.', desc: "Named for what a woman actually carries. Curated, not algorithmic. One long essay featured at a time — <em>attention is scarce</em>.",
+    hints: ['Filter by category: Health, Care, Work, Rest', 'Tap the featured essay', 'Each resource shows its format and time'] },
+  { id: 'you', title: 'You.', desc: "Not a profile — a <em>mirror</em>. Hours given, hours received. Pause-for-a-week in berry. A private reflection the app itself never reads.",
+    hints: ['Toggle <b>Invisible mode</b> off and on', 'Tap the <b>Pause</b> card', 'Read the private reflection at the bottom'] }
+];
+
+// ============ STATE ============
+let currentIdx = 0;
+
+const $ = (sel, ctx = document) => ctx.querySelector(sel);
+const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
+
+// ============ NAVIGATION ============
+function goToScreen(id) {
+  const idx = screens.findIndex(s => s.id === id);
+  if (idx === -1) return;
+  currentIdx = idx;
+
+  // Swap active screen
+  $$('.screen').forEach(s => s.classList.toggle('active', s.dataset.screen === id));
+
+  // Scroll phone content to top
+  const active = $(`.screen[data-screen="${id}"] .content`);
+  if (active) active.scrollTop = 0;
+
+  // Update panel
+  const config = screens[idx];
+  $('#panelTitle').innerHTML = config.title;
+  $('#panelDesc').innerHTML = config.desc;
+  $('#panelHints').innerHTML = config.hints.map(h => `<li>${h}</li>`).join('');
+  $('#posCur').textContent = String(idx + 1).padStart(2, '0');
+
+  // Update flow map
+  $$('.flow-step').forEach(f => f.classList.toggle('on', f.dataset.goto === id));
+
+  // Update prev/next buttons
+  $('#btnPrev').disabled = idx === 0;
+  $('#btnNext').disabled = idx === screens.length - 1;
+}
+
+// Tab bar navigation
+$$('.tab').forEach(t => {
+  t.addEventListener('click', () => {
+    const target = t.dataset.tab;
+    goToScreen(target);
+  });
+});
+
+// Back buttons
+$$('[data-back]').forEach(b => {
+  b.addEventListener('click', () => goToScreen(b.dataset.back));
+});
+
+// Flow map jumps
+$$('.flow-step').forEach(f => {
+  f.addEventListener('click', () => goToScreen(f.dataset.goto));
+});
+
+// Prev / Next
+$('#btnPrev').addEventListener('click', () => {
+  if (currentIdx > 0) goToScreen(screens[currentIdx - 1].id);
+});
+$('#btnNext').addEventListener('click', () => {
+  if (currentIdx < screens.length - 1) goToScreen(screens[currentIdx + 1].id);
+});
+
+// FAB → ask form
+$('#fabAsk').addEventListener('click', () => goToScreen('ask-form'));
+
+// Post Softly → being-held
+$('#postAsk').addEventListener('click', () => {
+  toast('Posted to your circle');
+  setTimeout(() => goToScreen('being-held'), 400);
+});
+
+// Home asks → volunteer interaction
+$$('[data-ask]').forEach(card => {
+  card.addEventListener('click', () => {
+    if (card.classList.contains('joined')) {
+      card.classList.remove('joined');
+      card.querySelector('.ask-act').textContent = card.dataset.ask === 'farida' ? 'save me some' : (card.dataset.ask === 'ruth' ? 'here' : 'join');
+    } else {
+      card.classList.add('joined');
+      card.querySelector('.ask-act').textContent = '✓ joined';
+      toast(card.dataset.ask === 'farida' ? 'She\'ll set some aside for you' : 'Thank you — she knows you\'re coming');
+    }
+  });
+});
+
+// Calendar blocks → soft feedback
+$$('.cal-block').forEach(b => {
+  b.addEventListener('click', () => {
+    if (b.classList.contains('cb-open') || b.classList.contains('cb-urgent')) {
+      toast('Volunteering for this slot');
+    }
+  });
+});
+
+// ============ CHIPS / FEELINGS / CATEGORIES ============
+// Single-select groups
+$$('[data-group]').forEach(group => {
+  const type = group.dataset.group;
+  const selector = type === 'feel' ? '.feel' : (type === 'cat' ? '.col' : (type === 'detail-tab' ? '.t' : '.chip'));
+  $$(selector, group).forEach(chip => {
+    chip.addEventListener('click', () => {
+      $$(selector, group).forEach(c => c.classList.remove('on', 'sel'));
+      chip.classList.add(type === 'feel' ? 'sel' : 'on');
+
+      // Handle detail tab content switch
+      if (type === 'detail-tab') {
+        const panel = chip.dataset.tabContent;
+        $$('.tab-content').forEach(p => p.classList.toggle('on', p.dataset.tabPanel === panel));
+      }
+    });
+  });
+});
+
+// ============ TOGGLES ============
+$$('[data-toggle]').forEach(row => {
+  const toggle = $('.toggle', row);
+  row.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggle.classList.toggle('on');
+  });
+});
+
+// ============ SYMPTOM CARDS → DETAIL ============
+$$('.sym-card').forEach(card => {
+  card.addEventListener('click', () => goToScreen('symptom'));
+});
+
+// Hub → Pocket link
+$$('[data-goto]').forEach(el => {
+  if (el.classList.contains('flow-step')) return; // already handled
+  el.addEventListener('click', () => goToScreen(el.dataset.goto));
+});
+
+// ============ APPROVAL FLOW (Screen 05) ============
+function handleApproval(card, action) {
+  const name = $('.resp-nm', card).textContent;
+
+  if (action === 'approve') {
+    // Move to confirmed
+    const person = card.dataset.person;
+    card.classList.add('confirmed', 'just-confirmed');
+
+    // Replace proximity with confirmed tag
+    const prox = $('.resp-prox', card);
+    if (prox) {
+      const tag = document.createElement('span');
+      tag.className = 'confirmed-tag';
+      tag.textContent = '✓ SET';
+      prox.replaceWith(tag);
+    }
+
+    // Remove the actions
+    $('.resp-actions', card).remove();
+
+    // Move card to confirmed list
+    $('#confirmedList').appendChild(card);
+
+    toast(`${name.split(' ')[0]} is coming`);
+  } else {
+    // Decline: fade the card and remove it after
+    card.classList.add('declined');
+    setTimeout(() => {
+      card.style.display = 'none';
+    }, 500);
+    toast('They\'ll know for next time');
+  }
+
+  // Update state
+  updateSlotBar();
+}
+
+function updateSlotBar() {
+  const confirmed = $$('#confirmedList .resp-card').length;
+  const pending = $$('#pendingList .resp-card:not(.declined):not([style*="display: none"])').filter(c => !c.classList.contains('confirmed')).length;
+  const totalSlots = 2;
+  const remaining = Math.max(0, totalSlots - confirmed);
+
+  // Slot fill
+  const pct = Math.min(100, (confirmed / totalSlots) * 100);
+  $('#slotFill').style.width = pct + '%';
+
+  // Slot text
+  if (confirmed >= totalSlots) {
+    $('#slotText').textContent = `2 slots · ${confirmed} confirmed · full`;
+    $('#slotLeft').textContent = 'full';
+    $('#slotLeft').classList.add('full');
+    $('#slotFill').style.background = 'var(--rose)';
+    $('#pendingHead').style.display = 'none';
+    $('#pendingList').style.display = 'none';
+    $('#fullNotice').classList.add('show');
+  } else {
+    $('#slotText').textContent = `2 slots · ${confirmed} confirmed · ${remaining} left`;
+    $('#slotLeft').textContent = confirmed === 0 ? 'open' : (confirmed === 1 ? 'half full' : 'nearly full');
+    $('#slotLeft').classList.remove('full');
+  }
+
+  // Confirmed count
+  $('#confirmedCount').textContent = `● ${confirmed} OF ${totalSlots}`;
+
+  // Pending count
+  $('#pendingCount').textContent = `● ${pending} WAITING`;
+
+  if (pending === 0 && confirmed < totalSlots) {
+    $('#pendingHead').style.display = 'none';
+    $('#pendingList').style.display = 'none';
+  }
+}
+
+$$('[data-action]').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const card = btn.closest('.resp-card');
+    handleApproval(card, btn.dataset.action);
+  });
+});
+
+// ============ VOICE NOTE PLAYBACK ============
+$('#voiceMsg')?.addEventListener('click', function() {
+  this.classList.toggle('playing');
+});
+
+$$('.audio-card .play-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const card = this.closest('.audio-card');
+    card.classList.toggle('playing');
+  });
+});
+
+// ============ TOAST ============
+let toastTimer;
+function toast(msg) {
+  const el = $('#toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2400);
+}
+
+// ============ INIT ============
+goToScreen('home');
+
+// Keyboard shortcuts: arrow keys
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight' && currentIdx < screens.length - 1) {
+    goToScreen(screens[currentIdx + 1].id);
+  } else if (e.key === 'ArrowLeft' && currentIdx > 0) {
+    goToScreen(screens[currentIdx - 1].id);
+  }
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meridian — Interactive Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..900,0..100;1,9..144,300..900,0..100&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FFD8C0;
+    --bg-alt: #D6EFD4;
+    --plum: #2B1B4D;
+    --plum-soft: #4A3570;
+    --plum-mute: #8B6FA8;
+    --pink: #E8408A;
+    --pink-deep: #B82870;
+    --green: #2E9842;
+    --green-bright: #3DA84F;
+    --green-pale: #C4E5C0;
+    --yellow: #FFB83D;
+    --coral: #FF6F5C;
+    --mint: #6FC870;
+    --shell: #FFF4E5;
+    --blush: #FFF5F8;
+    --rose-pale: #FFE8EC;
+    --line: rgba(43, 27, 77, 0.12);
+    --line-soft: rgba(43, 27, 77, 0.06);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overflow-x: hidden; }
+  body {
+    font-family: 'Geist', sans-serif;
+    background: 
+      radial-gradient(circle at 15% 20%, rgba(232, 64, 138, 0.12) 0%, transparent 45%),
+      radial-gradient(circle at 85% 80%, rgba(46, 152, 66, 0.10) 0%, transparent 45%),
+      radial-gradient(circle at 50% 50%, rgba(255, 184, 61, 0.05) 0%, transparent 60%),
+      var(--bg);
+    color: var(--plum);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Soft grain */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.04 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.6; pointer-events: none; z-index: 1;
+  }
+
+  /* ===== Layout ===== */
+  .stage {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 60px;
+    align-items: center;
+    max-width: 1280px;
+    width: 100%;
+    position: relative;
+    z-index: 2;
+  }
+
+  .side-left, .side-right {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .side-right { align-items: flex-end; text-align: right; }
+
+  .demo-label {
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--pink-deep);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .demo-label::before {
+    content: '';
+    width: 28px; height: 1px;
+    background: var(--pink-deep);
+  }
+
+  .side-right .demo-label::before { display: none; }
+  .side-right .demo-label::after {
+    content: '';
+    width: 28px; height: 1px;
+    background: var(--pink-deep);
+    margin-left: 10px;
+  }
+
+  .side-headline {
+    font-family: 'Fraunces', serif;
+    font-size: 38px;
+    font-weight: 350;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    font-variation-settings: "opsz" 96, "SOFT" 50;
+    color: var(--plum);
+    max-width: 320px;
+  }
+
+  .side-right .side-headline { margin-left: auto; }
+
+  .side-headline em {
+    font-style: italic;
+    color: var(--pink);
+    font-variation-settings: "opsz" 96, "SOFT" 100;
+  }
+
+  .annotation {
+    background: var(--blush);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 18px 20px;
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--plum-soft);
+    max-width: 320px;
+    position: relative;
+  }
+
+  .annotation .pin {
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px;
+    color: var(--pink);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .annotation strong { color: var(--plum); font-weight: 500; }
+
+  .reset-btn {
+    align-self: flex-start;
+    background: var(--plum);
+    color: var(--bg);
+    border: none;
+    padding: 12px 22px;
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+  }
+
+  .reset-btn:hover { background: var(--pink); transform: translateY(-1px); }
+  .reset-btn:active { transform: translateY(0); }
+
+  .side-right .reset-btn { align-self: flex-end; }
+
+  /* ===== Phone Frame ===== */
+  .phone {
+    width: 380px;
+    height: 760px;
+    background: #1F0F3A;
+    border-radius: 52px;
+    padding: 14px;
+    box-shadow:
+      0 50px 100px -25px rgba(43, 27, 77, 0.4),
+      0 25px 50px -12px rgba(184, 40, 112, 0.25),
+      inset 0 0 0 1.5px rgba(255, 213, 224, 0.08);
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .phone::before {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 55px;
+    background: linear-gradient(135deg, rgba(232, 64, 138, 0.4), rgba(255, 184, 61, 0.2), rgba(46, 152, 66, 0.3));
+    z-index: -1;
+    filter: blur(12px);
+    opacity: 0.5;
+  }
+
+  .screen {
+    width: 100%;
+    height: 100%;
+    background: var(--shell);
+    border-radius: 40px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .notch {
+    position: absolute;
+    top: 10px; left: 50%;
+    transform: translateX(-50%);
+    width: 110px; height: 30px;
+    background: #1F0F3A;
+    border-radius: 22px;
+    z-index: 50;
+  }
+
+  .status-bar {
+    position: absolute; top: 0; left: 0; right: 0;
+    padding: 14px 32px 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--plum);
+    z-index: 40;
+    letter-spacing: -0.01em;
+  }
+
+  .status-bar .signal {
+    display: flex;
+    gap: 3px;
+    align-items: flex-end;
+  }
+  .status-bar .signal span {
+    width: 3px;
+    background: var(--plum);
+    border-radius: 1px;
+  }
+  .status-bar .signal span:nth-child(1) { height: 4px; }
+  .status-bar .signal span:nth-child(2) { height: 6px; }
+  .status-bar .signal span:nth-child(3) { height: 8px; }
+  .status-bar .signal span:nth-child(4) { height: 10px; opacity: 0.4; }
+
+  /* ===== App Content ===== */
+  .app {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 50px 22px 100px;
+    scroll-behavior: smooth;
+  }
+  .app::-webkit-scrollbar { width: 0; }
+
+  .app-header {
+    margin-bottom: 22px;
+    animation: fadeUp 0.6s 0.1s both;
+  }
+
+  .greeting-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .day-tag {
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--plum-mute);
+  }
+
+  .live-dot {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Geist Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--green);
+  }
+  .live-dot::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    animation: pulseDot 2s infinite;
+  }
+
+  @keyframes pulseDot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(1.3); }
+  }
+
+  .greeting {
+    font-family: 'Fraunces', serif;
+    font-size: 32px;
+    font-weight: 350;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: var(--plum);
+  }
+  .greeting em {
+    font-style: italic;
+    color: var(--pink);
+    font-variation-settings: "opsz" 96, "SOFT" 80;
+  }
+
+  /* Hot flash quick logger - HERO INTERACTION */
+  .flash-card {
+    background: linear-gradient(135deg, var(--pink) 0%, var(--coral) 100%);
+    border-radius: 24px;
+    padding: 22px;
+    color: var(--blush);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 14px;
+    box-shadow: 0 12px 28px -12px rgba(232, 64, 138, 0.6);
+    animation: fadeUp 0.6s 0.2s both;
+  }
+
+  .flash-card::before {
+    content: '';
+    position: absolute;
+    top: -40%; right: -20%;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 244, 229, 0.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .flash-card .head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+  }
+
+  .flash-card .label {
+    font-family: 'Geist Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    opacity: 0.8;
+  }
+
+  .flash-card .count-row {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .flash-card .count {
+    font-family: 'Fraunces', serif;
+    font-size: 64px;
+    font-weight: 350;
+    line-height: 0.9;
+    letter-spacing: -0.04em;
+    font-variation-settings: "opsz" 144, "SOFT" 60;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .flash-card .count.bump {
+    animation: bump 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  @keyframes bump {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.18); color: var(--yellow); }
+    100% { transform: scale(1); }
+  }
+
+  .flash-card .count-meta {
+    font-size: 13px;
+    opacity: 0.85;
+    line-height: 1.3;
+  }
+
+  .flash-btn {
+    width: 100%;
+    background: var(--blush);
+    color: var(--pink-deep);
+    border: none;
+    padding: 14px;
+    border-radius: 14px;
+    font-family: 'Geist', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .flash-btn:hover { transform: translateY(-1px); }
+  .flash-btn:active { transform: scale(0.98); }
+
+  .flash-btn .icon {
+    font-size: 18px;
+  }
+
+  /* Ripple effect */
+  .ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(232, 64, 138, 0.3);
+    pointer-events: none;
+    animation: rippleAnim 0.6s ease-out;
+  }
+
+  @keyframes rippleAnim {
+    to { transform: scale(4); opacity: 0; }
+  }
+
+  /* Floating "+1" feedback */
+  .float-plus {
+    position: absolute;
+    font-family: 'Fraunces', serif;
+    font-size: 32px;
+    font-style: italic;
+    color: var(--yellow);
+    pointer-events: none;
+    animation: floatUp 1s ease-out forwards;
+    z-index: 100;
+  }
+
+  @keyframes floatUp {
+    0% { opacity: 0; transform: translateY(0) scale(0.8); }
+    20% { opacity: 1; transform: translateY(-10px) scale(1.1); }
+    100% { opacity: 0; transform: translateY(-60px) scale(1); }
+  }
+
+  /* Stats row */
+  .stats-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+    animation: fadeUp 0.6s 0.3s both;
+  }
+
+  .stat-card {
+    background: var(--blush);
+    border: 1px solid var(--line-soft);
+    border-radius: 18px;
+    padding: 16px;
+  }
+
+  .stat-card .lbl {
+    font-family: 'Geist Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--plum-mute);
+    margin-bottom: 8px;
+  }
+
+  .stat-card .val {
+    font-family: 'Fraunces', serif;
+    font-size: 24px;
+    font-weight: 350;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  .stat-card .val em {
+    font-style: italic;
+    font-size: 14px;
+    color: var(--plum-mute);
+    margin-left: 2px;
+  }
+
+  .stat-card .delta {
+    font-size: 11px;
+    margin-top: 6px;
+    color: var(--plum-mute);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .stat-card .delta.up { color: var(--green); }
+  .stat-card .delta.down { color: var(--coral); }
+
+  /* Sparkline */
+  .spark { width: 100%; height: 24px; margin-top: 8px; }
+
+  /* Section title */
+  .section-title {
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--plum-mute);
+    margin: 22px 0 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .section-title .pct {
+    color: var(--green);
+    font-weight: 500;
+  }
+
+  /* Medications */
+  .meds {
+    animation: fadeUp 0.6s 0.4s both;
+  }
+
+  .med {
+    background: var(--blush);
+    border: 1.5px solid var(--line-soft);
+    border-radius: 16px;
+    padding: 14px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+  }
+
+  .med:hover { border-color: var(--pink); transform: translateX(2px); }
+  .med:active { transform: scale(0.98); }
+
+  .med.taken {
+    background: linear-gradient(135deg, var(--green-pale) 0%, rgba(196, 229, 192, 0.5) 100%);
+    border-color: var(--green);
+  }
+
+  .med.taken .med-name { text-decoration: line-through; opacity: 0.65; }
+
+  .med-pill {
+    width: 12px; height: 36px;
+    border-radius: 6px;
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  .med-pill.estradiol { background: linear-gradient(180deg, var(--pink) 50%, var(--coral) 50%); }
+  .med-pill.progesterone { background: linear-gradient(180deg, var(--yellow) 50%, var(--shell) 50%); border: 1px solid var(--line); }
+  .med-pill.venlafaxine { background: linear-gradient(180deg, var(--plum) 50%, var(--plum-mute) 50%); }
+  .med-pill.vitamind { background: var(--yellow); }
+  .med-pill.calcium { background: var(--blush); border: 1px solid var(--line); }
+
+  .med-info { flex: 1; min-width: 0; }
+  .med-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--plum);
+    margin-bottom: 2px;
+  }
+  .med-meta {
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px;
+    color: var(--plum-mute);
+    letter-spacing: 0.04em;
+  }
+
+  .check {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    border: 2px solid var(--line);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    background: transparent;
+  }
+  .med.taken .check {
+    background: var(--green);
+    border-color: var(--green);
+  }
+  .med.taken .check::after {
+    content: '✓';
+    color: var(--blush);
+    font-size: 14px;
+    font-weight: bold;
+    animation: checkPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  @keyframes checkPop {
+    0% { transform: scale(0) rotate(-45deg); }
+    100% { transform: scale(1) rotate(0); }
+  }
+
+  /* Mood selector */
+  .mood {
+    background: var(--bg-alt);
+    border-radius: 20px;
+    padding: 18px;
+    margin-top: 14px;
+    animation: fadeUp 0.6s 0.5s both;
+  }
+
+  .mood-q {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    font-weight: 400;
+    margin-bottom: 14px;
+    letter-spacing: -0.01em;
+  }
+  .mood-q em { font-style: italic; color: var(--pink); }
+
+  .mood-opts {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+  }
+
+  .mood-opt {
+    background: var(--blush);
+    border: 1.5px solid transparent;
+    border-radius: 14px;
+    padding: 12px 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .mood-opt:hover { transform: translateY(-2px); }
+  .mood-opt:active { transform: scale(0.95); }
+
+  .mood-opt.selected {
+    border-color: var(--pink);
+    background: var(--rose-pale);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px -6px rgba(232, 64, 138, 0.5);
+  }
+
+  .mood-emoji { font-size: 22px; line-height: 1; }
+  .mood-label {
+    font-family: 'Geist Mono', monospace;
+    font-size: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--plum-mute);
+  }
+  .mood-opt.selected .mood-label { color: var(--pink-deep); font-weight: 600; }
+
+  /* AI Brief - expandable */
+  .ai-brief {
+    background: var(--plum);
+    color: var(--shell);
+    border-radius: 22px;
+    padding: 18px;
+    margin-top: 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+    animation: fadeUp 0.6s 0.6s both;
+  }
+
+  .ai-brief:hover { transform: translateY(-2px); }
+
+  .ai-brief::before {
+    content: '';
+    position: absolute;
+    top: -50%; right: -30%;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(255, 184, 61, 0.2) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .ai-brief::after {
+    content: '';
+    position: absolute;
+    top: 18px; right: 18px;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--yellow);
+    box-shadow: 0 0 12px var(--yellow);
+    animation: pulseDot 2s infinite;
+  }
+
+  .ai-tag {
+    font-family: 'Geist Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--yellow);
+    margin-bottom: 10px;
+  }
+
+  .ai-headline {
+    font-family: 'Fraunces', serif;
+    font-size: 19px;
+    font-weight: 400;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    margin-bottom: 12px;
+  }
+  .ai-headline em {
+    font-style: italic;
+    color: var(--yellow);
+    font-variation-settings: "opsz" 96, "SOFT" 100;
+  }
+
+  .ai-expand-prompt {
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px;
+    color: rgba(255, 244, 229, 0.6);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .ai-arrow {
+    transition: transform 0.3s;
+    display: inline-block;
+  }
+  .ai-brief.expanded .ai-arrow { transform: rotate(90deg); }
+
+  .ai-details {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), margin 0.5s;
+  }
+
+  .ai-brief.expanded .ai-details {
+    max-height: 400px;
+    margin-top: 14px;
+  }
+
+  .ai-bullet {
+    padding: 10px 0;
+    border-top: 1px solid rgba(255, 244, 229, 0.15);
+    font-size: 12px;
+    line-height: 1.5;
+    color: rgba(255, 244, 229, 0.85);
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .ai-bullet::before {
+    content: '';
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--yellow);
+    margin-top: 7px;
+    flex-shrink: 0;
+  }
+
+  .ai-bullet strong {
+    color: var(--shell);
+    font-weight: 500;
+  }
+
+  /* Appointment card */
+  .appt {
+    background: linear-gradient(135deg, var(--green-bright) 0%, var(--mint) 100%);
+    color: var(--blush);
+    border-radius: 22px;
+    padding: 18px;
+    margin-top: 14px;
+    position: relative;
+    overflow: hidden;
+    animation: fadeUp 0.6s 0.7s both;
+  }
+
+  .appt::before {
+    content: '';
+    position: absolute;
+    bottom: -50%; left: -20%;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(255, 244, 229, 0.18) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .appt-tag {
+    font-family: 'Geist Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    opacity: 0.85;
+    margin-bottom: 8px;
+  }
+
+  .appt-doc {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 400;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    margin-bottom: 4px;
+  }
+  .appt-doc em { font-style: italic; }
+
+  .appt-when {
+    font-size: 13px;
+    opacity: 0.9;
+    margin-bottom: 14px;
+  }
+
+  .appt-prep {
+    background: rgba(255, 244, 229, 0.18);
+    border-radius: 12px;
+    padding: 10px 12px;
+    backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .appt-prep:hover { background: rgba(255, 244, 229, 0.28); }
+
+  .appt-prep-label {
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .progress {
+    width: 60px; height: 4px;
+    background: rgba(255, 244, 229, 0.3);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--blush);
+    border-radius: 2px;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Bottom tab bar */
+  .tabbar {
+    position: absolute;
+    bottom: 12px; left: 12px; right: 12px;
+    background: rgba(43, 27, 77, 0.92);
+    backdrop-filter: blur(20px);
+    border-radius: 28px;
+    padding: 10px 8px;
+    display: flex;
+    justify-content: space-around;
+    z-index: 30;
+    box-shadow: 0 12px 28px -8px rgba(43, 27, 77, 0.5);
+  }
+
+  .tab {
+    flex: 1;
+    background: none;
+    border: none;
+    padding: 10px 6px;
+    cursor: pointer;
+    color: rgba(255, 244, 229, 0.55);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    transition: color 0.2s;
+    border-radius: 18px;
+  }
+  .tab:hover { color: var(--blush); }
+  .tab.active { color: var(--yellow); }
+  .tab.active .tab-icon { transform: translateY(-2px); }
+
+  .tab-icon {
+    font-size: 16px;
+    transition: transform 0.3s;
+  }
+
+  .tab-label {
+    font-family: 'Geist Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* Toast notification */
+  .toast {
+    position: absolute;
+    bottom: 90px; left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--plum);
+    color: var(--shell);
+    padding: 12px 18px;
+    border-radius: 14px;
+    font-size: 13px;
+    box-shadow: 0 12px 28px -8px rgba(43, 27, 77, 0.5);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 300px;
+    white-space: nowrap;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .toast .icon {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--yellow);
+    color: var(--plum);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: bold;
+    flex-shrink: 0;
+  }
+
+  /* Modal */
+  .modal-backdrop {
+    position: absolute; inset: 0;
+    background: rgba(43, 27, 77, 0.6);
+    backdrop-filter: blur(8px);
+    z-index: 70;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    border-radius: 40px;
+  }
+  .modal-backdrop.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .modal {
+    width: 100%;
+    background: var(--shell);
+    border-radius: 32px 32px 0 0;
+    padding: 24px 22px 30px;
+    transform: translateY(100%);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    max-height: 85%;
+    overflow-y: auto;
+  }
+  .modal::-webkit-scrollbar { width: 0; }
+  .modal-backdrop.show .modal { transform: translateY(0); }
+
+  .modal-handle {
+    width: 40px; height: 4px;
+    background: var(--line);
+    border-radius: 2px;
+    margin: 0 auto 18px;
+  }
+
+  .modal-tag {
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--pink-deep);
+    margin-bottom: 10px;
+  }
+
+  .modal-title {
+    font-family: 'Fraunces', serif;
+    font-size: 26px;
+    font-weight: 350;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin-bottom: 16px;
+  }
+  .modal-title em { font-style: italic; color: var(--pink); }
+
+  .prep-item {
+    padding: 14px 0;
+    border-bottom: 1px dotted var(--line);
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .prep-item:last-child { border-bottom: none; }
+
+  .prep-num {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 18px;
+    color: var(--pink);
+    min-width: 24px;
+  }
+
+  .prep-content { flex: 1; }
+  .prep-q {
+    font-size: 14px;
+    color: var(--plum);
+    font-weight: 500;
+    margin-bottom: 4px;
+    line-height: 1.4;
+  }
+  .prep-why {
+    font-size: 12px;
+    color: var(--plum-mute);
+    line-height: 1.45;
+  }
+
+  .modal-close {
+    width: 100%;
+    background: var(--plum);
+    color: var(--bg);
+    border: none;
+    padding: 14px;
+    border-radius: 16px;
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    margin-top: 18px;
+  }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Pulse hints for first-time users */
+  .hint-pulse::after {
+    content: '';
+    position: absolute;
+    top: -4px; right: -4px;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--pink);
+    animation: hintPulse 2s infinite;
+    box-shadow: 0 0 0 0 rgba(232, 64, 138, 0.7);
+  }
+
+  @keyframes hintPulse {
+    0% { box-shadow: 0 0 0 0 rgba(232, 64, 138, 0.7); }
+    70% { box-shadow: 0 0 0 12px rgba(232, 64, 138, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(232, 64, 138, 0); }
+  }
+
+  /* Responsive */
+  @media (max-width: 1100px) {
+    .stage { grid-template-columns: 1fr; gap: 32px; }
+    .side-left, .side-right { align-items: center; text-align: center; max-width: 380px; margin: 0 auto; }
+    .side-right .demo-label::after { display: none; }
+    .side-right .demo-label::before {
+      content: '';
+      width: 28px; height: 1px;
+      background: var(--pink-deep);
+      display: block;
+    }
+    .side-right { order: 3; }
+    .side-headline { max-width: 100%; }
+    .annotation { max-width: 380px; }
+  }
+
+  @media (max-width: 440px) {
+    body { padding: 16px; }
+    .phone {
+      width: calc(100vw - 32px);
+      max-width: 380px;
+      height: calc(100vh - 32px);
+      max-height: 760px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <!-- Left side -->
+  <div class="side-left">
+    <div class="demo-label">Interactive Demo · Tap anywhere</div>
+    <h1 class="side-headline">Elaine's <em>Thursday</em> morning, in her own hand.</h1>
+
+    <div class="annotation">
+      <span class="pin">Try this →</span>
+      Tap <strong>"I'm having one now"</strong> to log a hot flash. The count updates, the AI brief reweighs, and the next visit prep adjusts in real time.
+    </div>
+
+    <div class="annotation">
+      <span class="pin">Then this →</span>
+      Tap each <strong>medication</strong> to mark it taken. Watch adherence climb, and the morning regimen settle into completion.
+    </div>
+
+    <button class="reset-btn" onclick="resetDemo()">
+      ↻ Reset demo
+    </button>
+  </div>
+
+  <!-- Phone -->
+  <div class="phone">
+    <div class="screen">
+      <div class="notch"></div>
+      <div class="status-bar">
+        <span id="time">9:42</span>
+        <div class="signal">
+          <span></span><span></span><span></span><span></span>
+        </div>
+      </div>
+
+      <div class="app" id="app">
+        <!-- Header -->
+        <header class="app-header">
+          <div class="greeting-meta">
+            <div class="day-tag">Thursday · October 15</div>
+            <div class="live-dot">Synced</div>
+          </div>
+          <h1 class="greeting">Good morning,<br><em>Elaine</em></h1>
+        </header>
+
+        <!-- Hot flash quick logger -->
+        <div class="flash-card">
+          <div class="head">
+            <span class="label">Hot flashes today</span>
+          </div>
+          <div class="count-row">
+            <div class="count" id="flashCount">4</div>
+            <div class="count-meta">
+              <span id="flashContext">2 overnight<br>last at 7:15 am</span>
+            </div>
+          </div>
+          <button class="flash-btn hint-pulse" id="logFlashBtn" onclick="logFlash(event)">
+            <span class="icon">🔥</span>
+            <span>I'm having one now</span>
+          </button>
+        </div>
+
+        <!-- Stats row -->
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="lbl">Sleep</div>
+            <div class="val">6<em>h</em>12<em>m</em></div>
+            <div class="delta down">↓ 49 min vs avg</div>
+            <svg class="spark" viewBox="0 0 100 24" preserveAspectRatio="none">
+              <path d="M0,8 L14,6 L28,12 L42,10 L56,16 L70,14 L84,18 L100,20" stroke="#FF6F5C" stroke-width="2" fill="none" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="stat-card">
+            <div class="lbl">Resting HR</div>
+            <div class="val">68<em>bpm</em></div>
+            <div class="delta up">→ within range</div>
+            <svg class="spark" viewBox="0 0 100 24" preserveAspectRatio="none">
+              <path d="M0,12 L14,14 L28,10 L42,12 L56,11 L70,13 L84,12 L100,11" stroke="#2E9842" stroke-width="2" fill="none" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Medications -->
+        <div class="meds">
+          <div class="section-title">
+            <span>Morning medications</span>
+            <span class="pct" id="adherencePct">33%</span>
+          </div>
+          <div class="med taken" data-med="vitamind" onclick="toggleMed(this)">
+            <div class="med-pill vitamind"></div>
+            <div class="med-info">
+              <div class="med-name">Vitamin D3 · 2000 IU</div>
+              <div class="med-meta">Self-directed · 7:00 am</div>
+            </div>
+            <div class="check"></div>
+          </div>
+          <div class="med" data-med="estradiol" onclick="toggleMed(this)">
+            <div class="med-pill estradiol"></div>
+            <div class="med-info">
+              <div class="med-name">Estradiol patch · 0.05mg</div>
+              <div class="med-meta">Dr. Okafor · apply now</div>
+            </div>
+            <div class="check"></div>
+          </div>
+          <div class="med" data-med="calcium" onclick="toggleMed(this)">
+            <div class="med-pill calcium"></div>
+            <div class="med-info">
+              <div class="med-name">Calcium + magnesium</div>
+              <div class="med-meta">Self-directed · with breakfast</div>
+            </div>
+            <div class="check"></div>
+          </div>
+        </div>
+
+        <!-- Mood -->
+        <div class="mood">
+          <div class="mood-q">How are you <em>feeling</em>?</div>
+          <div class="mood-opts">
+            <button class="mood-opt" data-mood="bright" onclick="setMood(this)">
+              <span class="mood-emoji">☀️</span>
+              <span class="mood-label">Bright</span>
+            </button>
+            <button class="mood-opt" data-mood="steady" onclick="setMood(this)">
+              <span class="mood-emoji">🌿</span>
+              <span class="mood-label">Steady</span>
+            </button>
+            <button class="mood-opt" data-mood="foggy" onclick="setMood(this)">
+              <span class="mood-emoji">🌫️</span>
+              <span class="mood-label">Foggy</span>
+            </button>
+            <button class="mood-opt" data-mood="tense" onclick="setMood(this)">
+              <span class="mood-emoji">⚡</span>
+              <span class="mood-label">Tense</span>
+            </button>
+            <button class="mood-opt" data-mood="low" onclick="setMood(this)">
+              <span class="mood-emoji">🌧️</span>
+              <span class="mood-label">Low</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- AI Brief - expandable -->
+        <div class="ai-brief" id="aiBrief" onclick="toggleBrief()">
+          <div class="ai-tag">· AI insight</div>
+          <h2 class="ai-headline" id="aiHeadline">
+            Sleep quality has been <em>quietly drifting</em> for 9 days.
+          </h2>
+          <div class="ai-expand-prompt">
+            <span id="briefAction">See the pattern</span>
+            <span class="ai-arrow">→</span>
+          </div>
+          <div class="ai-details">
+            <div class="ai-bullet">
+              <div><strong>Avg 6h 14m</strong> over last 9 nights vs. 7h 1m baseline.</div>
+            </div>
+            <div class="ai-bullet" id="aiCorrelation">
+              <div>Hot-flash count is <strong>3.2× higher</strong> on nights under 6 hours.</div>
+            </div>
+            <div class="ai-bullet">
+              <div>Trend coincides with <strong>Aug 12 medication change</strong>.</div>
+            </div>
+            <div class="ai-bullet">
+              <div><strong>Worth raising</strong> with Dr. Okafor on Tuesday.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Appointment -->
+        <div class="appt">
+          <div class="appt-tag">Next appointment</div>
+          <h2 class="appt-doc">Dr. Okafor, <em>OB/GYN</em></h2>
+          <div class="appt-when">Tuesday Oct 20 · 11:30 am · Telehealth</div>
+          <div class="appt-prep" onclick="openPrep()">
+            <div>
+              <div class="appt-prep-label">Visit prep</div>
+              <div style="font-family:Fraunces,serif; font-size:14px; margin-top:2px;" id="prepStatus">3 questions ready</div>
+            </div>
+            <div class="progress">
+              <div class="progress-fill" id="prepProgress" style="width: 60%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom tabs -->
+      <div class="tabbar">
+        <button class="tab active">
+          <span class="tab-icon">◉</span>
+          <span class="tab-label">Today</span>
+        </button>
+        <button class="tab">
+          <span class="tab-icon">◈</span>
+          <span class="tab-label">Trends</span>
+        </button>
+        <button class="tab">
+          <span class="tab-icon">◊</span>
+          <span class="tab-label">Care</span>
+        </button>
+        <button class="tab">
+          <span class="tab-icon">◇</span>
+          <span class="tab-label">Profile</span>
+        </button>
+      </div>
+
+      <!-- Toast -->
+      <div class="toast" id="toast">
+        <div class="icon">✓</div>
+        <span id="toastMsg">Logged</span>
+      </div>
+
+      <!-- Prep Modal -->
+      <div class="modal-backdrop" id="prepModal">
+        <div class="modal" onclick="event.stopPropagation()">
+          <div class="modal-handle"></div>
+          <div class="modal-tag">AI-prepared · Tuesday Oct 20</div>
+          <h2 class="modal-title">Questions for <em>Dr. Okafor</em></h2>
+
+          <div class="prep-item">
+            <div class="prep-num">i.</div>
+            <div class="prep-content">
+              <div class="prep-q">Is it time to adjust my estradiol dose?</div>
+              <div class="prep-why">Hot flash frequency up 41% this month despite consistent adherence.</div>
+            </div>
+          </div>
+          <div class="prep-item">
+            <div class="prep-num">ii.</div>
+            <div class="prep-content">
+              <div class="prep-q">Could ashwagandha be affecting my SSRI?</div>
+              <div class="prep-why">Started 12 days ago. Possible serotonergic overlap with venlafaxine.</div>
+            </div>
+          </div>
+          <div class="prep-item">
+            <div class="prep-num">iii.</div>
+            <div class="prep-content">
+              <div class="prep-q">Should we discuss a sleep study?</div>
+              <div class="prep-why">9 consecutive nights below baseline. Hot flashes correlate with wakings.</div>
+            </div>
+          </div>
+          <button class="modal-close" onclick="closePrep()">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right side -->
+  <div class="side-right">
+    <div class="demo-label">Then →</div>
+    <h1 class="side-headline">The brief <em>writes itself</em> as you go.</h1>
+
+    <div class="annotation">
+      <span class="pin">Try this →</span>
+      Tap the dark <strong>AI insight card</strong> to expand. Every claim cites the data point that produced it.
+    </div>
+
+    <div class="annotation">
+      <span class="pin">And this →</span>
+      Tap the <strong>green appointment card</strong> to see the questions Meridian has prepared for Tuesday's visit.
+    </div>
+
+    <div class="annotation">
+      <span class="pin">Notice →</span>
+      Pick a <strong>mood</strong>. The AI insight reweights — emotional state is data, too.
+    </div>
+  </div>
+</div>
+
+<script>
+  // ===== State =====
+  const state = {
+    flashCount: 4,
+    flashLogs: [],
+    medsTaken: { vitamind: true, estradiol: false, calcium: false },
+    mood: null,
+    briefExpanded: false,
+  };
+
+  const initialState = JSON.parse(JSON.stringify(state));
+
+  // ===== Hot flash logging =====
+  function logFlash(e) {
+    state.flashCount++;
+    state.flashLogs.push(new Date());
+
+    const countEl = document.getElementById('flashCount');
+    countEl.textContent = state.flashCount;
+    countEl.classList.remove('bump');
+    void countEl.offsetWidth; // force reflow
+    countEl.classList.add('bump');
+
+    // Floating +1
+    const plus = document.createElement('div');
+    plus.className = 'float-plus';
+    plus.textContent = '+1';
+    const rect = e.currentTarget.getBoundingClientRect();
+    const phoneRect = document.querySelector('.phone').getBoundingClientRect();
+    plus.style.left = (rect.left - phoneRect.left + rect.width / 2 - 12) + 'px';
+    plus.style.top = (rect.top - phoneRect.top - 10) + 'px';
+    document.querySelector('.phone').appendChild(plus);
+    setTimeout(() => plus.remove(), 1000);
+
+    // Ripple
+    const ripple = document.createElement('span');
+    ripple.className = 'ripple';
+    const btnRect = e.currentTarget.getBoundingClientRect();
+    const size = Math.max(btnRect.width, btnRect.height);
+    ripple.style.width = ripple.style.height = size + 'px';
+    ripple.style.left = (e.clientX - btnRect.left - size / 2) + 'px';
+    ripple.style.top = (e.clientY - btnRect.top - size / 2) + 'px';
+    e.currentTarget.appendChild(ripple);
+    setTimeout(() => ripple.remove(), 600);
+
+    // Update context
+    const now = new Date();
+    const time = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase();
+    document.getElementById('flashContext').innerHTML = `2 overnight<br>last just now`;
+
+    // Update AI brief
+    if (state.flashCount > 5) {
+      document.getElementById('aiHeadline').innerHTML =
+        `Hot flash count is <em>climbing fast</em> today — already ${state.flashCount}.`;
+      document.getElementById('aiCorrelation').innerHTML =
+        `<div><strong>Today is in the top 10%</strong> of flash days this month.</div>`;
+    }
+
+    // Remove pulse hint after first interaction
+    e.currentTarget.classList.remove('hint-pulse');
+
+    showToast('Hot flash logged · synced to Dr. Okafor');
+    updatePrep();
+  }
+
+  // ===== Medication toggle =====
+  function toggleMed(el) {
+    const med = el.dataset.med;
+    state.medsTaken[med] = !state.medsTaken[med];
+    el.classList.toggle('taken');
+
+    const taken = Object.values(state.medsTaken).filter(Boolean).length;
+    const total = Object.keys(state.medsTaken).length;
+    const pct = Math.round(taken / total * 100);
+    document.getElementById('adherencePct').textContent = pct + '%';
+
+    if (taken === total) {
+      showToast('Morning regimen complete — well done');
+    } else if (state.medsTaken[med]) {
+      showToast('Marked as taken');
+    } else {
+      showToast('Marked as missed');
+    }
+    updatePrep();
+  }
+
+  // ===== Mood =====
+  function setMood(el) {
+    document.querySelectorAll('.mood-opt').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    state.mood = el.dataset.mood;
+
+    // Adjust AI brief based on mood
+    const moodEffects = {
+      bright: { headline: 'A <em>good window</em> to plan something gentle today.', toast: 'Mood: Bright' },
+      steady: { headline: 'Steady is <em>plenty.</em> Trends remain on watch.', toast: 'Mood: Steady' },
+      foggy: { headline: 'Brain fog often <em>tracks with sleep</em> — last 9 nights are short.', toast: 'Mood: Foggy · noted' },
+      tense: { headline: 'Tension may be <em>amplifying</em> hot-flash perception today.', toast: 'Mood: Tense · noted' },
+      low: { headline: 'Low days <em>matter.</em> Dr. Patel will see this in your brief.', toast: 'Mood: Low · routed to Dr. Patel' },
+    };
+    const effect = moodEffects[state.mood];
+    document.getElementById('aiHeadline').innerHTML = effect.headline;
+    showToast(effect.toast);
+    updatePrep();
+  }
+
+  // ===== AI Brief expand =====
+  function toggleBrief() {
+    const brief = document.getElementById('aiBrief');
+    state.briefExpanded = !state.briefExpanded;
+    brief.classList.toggle('expanded');
+    document.getElementById('briefAction').textContent =
+      state.briefExpanded ? 'Hide details' : 'See the pattern';
+  }
+
+  // ===== Prep Modal =====
+  function openPrep() {
+    document.getElementById('prepModal').classList.add('show');
+  }
+  function closePrep() {
+    document.getElementById('prepModal').classList.remove('show');
+  }
+  document.getElementById('prepModal').addEventListener('click', closePrep);
+
+  // ===== Update prep readiness =====
+  function updatePrep() {
+    let score = 60;
+    if (state.flashCount > 4) score += 10;
+    if (state.mood) score += 15;
+    const taken = Object.values(state.medsTaken).filter(Boolean).length;
+    score += taken * 5;
+    score = Math.min(score, 100);
+    document.getElementById('prepProgress').style.width = score + '%';
+    if (score >= 95) {
+      document.getElementById('prepStatus').textContent = 'Ready for Tuesday';
+    } else if (score >= 80) {
+      document.getElementById('prepStatus').textContent = '4 questions ready';
+    } else {
+      document.getElementById('prepStatus').textContent = '3 questions ready';
+    }
+  }
+
+  // ===== Toast =====
+  let toastTimer;
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    document.getElementById('toastMsg').textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+  }
+
+  // ===== Reset =====
+  function resetDemo() {
+    Object.assign(state, JSON.parse(JSON.stringify(initialState)));
+
+    document.getElementById('flashCount').textContent = state.flashCount;
+    document.getElementById('flashContext').innerHTML = '2 overnight<br>last at 7:15 am';
+    document.getElementById('logFlashBtn').classList.add('hint-pulse');
+
+    document.querySelectorAll('.med').forEach(m => {
+      const taken = state.medsTaken[m.dataset.med];
+      m.classList.toggle('taken', taken);
+    });
+    document.getElementById('adherencePct').textContent = '33%';
+
+    document.querySelectorAll('.mood-opt').forEach(o => o.classList.remove('selected'));
+
+    const brief = document.getElementById('aiBrief');
+    brief.classList.remove('expanded');
+    document.getElementById('aiHeadline').innerHTML =
+      'Sleep quality has been <em>quietly drifting</em> for 9 days.';
+    document.getElementById('aiCorrelation').innerHTML =
+      `<div>Hot-flash count is <strong>3.2× higher</strong> on nights under 6 hours.</div>`;
+    document.getElementById('briefAction').textContent = 'See the pattern';
+
+    document.getElementById('prepProgress').style.width = '60%';
+    document.getElementById('prepStatus').textContent = '3 questions ready';
+
+    closePrep();
+    showToast('Demo reset');
+  }
+
+  // ===== Live clock in status bar =====
+  function updateClock() {
+    const now = new Date();
+    const t = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: false });
+    document.getElementById('time').textContent = t;
+  }
+  updateClock();
+  setInterval(updateClock, 30000);
+</script>
+</body>
+</html>
