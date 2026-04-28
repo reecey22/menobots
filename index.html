@@ -3,57 +3,233 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Design Research — CARE Lab, Emory</title>
+
+<title>Design Provocations — CARE Lab</title>
+
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;1,300;1,400&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
+
 <style>
-  body{ font-family: 'Fraunces', Georgia, serif; max-width: 720px; margin: 80px auto;
-        padding: 0 32px; color: #2D1F26; line-height: 1.6; background: #FFFFFF; }
-  .lab{ font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.22em;
-        text-transform: uppercase; color: #9B7F8A; margin-bottom: 24px; }
-  h1{ font-weight: 300; font-size: 64px; line-height: 1; letter-spacing: -0.03em;
-      margin-bottom: 24px; }
-  h1 em{ color: #E25A75; font-style: italic; }
-  .intro{ font-size: 20px; font-weight: 300; color: #5C4049; margin-bottom: 56px; }
-  h2{ font-weight: 400; font-style: italic; font-size: 24px; margin: 48px 0 8px;
-      letter-spacing: -0.01em; }
-  .desc{ font-size: 14px; color: #9B7F8A; margin-bottom: 16px; }
-  ul{ list-style: none; padding: 0; }
-  li{ padding: 14px 0; border-bottom: 1px solid rgba(45,31,38,0.1); }
-  a{ color: #E25A75; text-decoration: none; font-style: italic; }
-  a:hover{ text-decoration: underline; }
-  footer{ margin-top: 80px; padding-top: 24px; border-top: 1px solid rgba(45,31,38,0.1);
-          font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.18em;
-          color: #9B7F8A; text-transform: uppercase; }
+:root{
+  --ink:#2D1F26;
+  --muted:#9B7F8A;
+  --accent:#E25A75;
+  --bg:#FFFAFC;
+  --border:rgba(45,31,38,0.08);
+}
+
+body{
+  font-family:'Fraunces', Georgia, serif;
+  max-width:720px;
+  margin:80px auto;
+  padding:0 32px;
+  color:var(--ink);
+  line-height:1.6;
+  background:var(--bg);
+  position:relative;
+  overflow-x:hidden;
+}
+
+/* Ambient graphic orb */
+body::before{
+  content:"";
+  position:fixed;
+  top:-120px;
+  right:-120px;
+  width:400px;
+  height:400px;
+  background:radial-gradient(circle, rgba(226,90,117,0.25) 0%, rgba(226,90,117,0) 70%);
+  z-index:-1;
+}
+
+/* Lab label */
+.lab{
+  font-family:'DM Mono', monospace;
+  font-size:11px;
+  letter-spacing:0.22em;
+  text-transform:uppercase;
+  color:var(--muted);
+  margin-bottom:24px;
+}
+
+/* Hero */
+h1{
+  font-weight:300;
+  font-size:64px;
+  line-height:1;
+  letter-spacing:-0.03em;
+  margin-bottom:24px;
+}
+
+h1 em{
+  color:var(--accent);
+  font-style:italic;
+}
+
+.intro{
+  font-size:20px;
+  font-weight:300;
+  color:#5C4049;
+  margin-bottom:72px;
+}
+
+/* Sections */
+.section{
+  margin-bottom:64px;
+}
+
+.section-header{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.section-icon{
+  width:28px;
+  height:28px;
+  opacity:0.7;
+}
+
+/* Titles */
+h2{
+  font-weight:400;
+  font-style:italic;
+  font-size:24px;
+  margin:0;
+}
+
+.desc{
+  font-size:14px;
+  color:var(--muted);
+  margin:12px 0 20px;
+}
+
+/* Card */
+.card{
+  padding:20px 22px;
+  border:1px solid var(--border);
+  border-radius:14px;
+  background:white;
+  transition:all 0.25s ease;
+  position:relative;
+  overflow:hidden;
+}
+
+.card:hover{
+  transform:translateY(-3px);
+  border-color:rgba(226,90,117,0.25);
+  box-shadow:0 10px 30px rgba(226,90,117,0.1);
+}
+
+/* subtle animated underline */
+.card::after{
+  content:"";
+  position:absolute;
+  bottom:0;
+  left:0;
+  height:2px;
+  width:0%;
+  background:var(--accent);
+  transition:width 0.3s ease;
+}
+
+.card:hover::after{
+  width:100%;
+}
+
+a{
+  color:var(--accent);
+  text-decoration:none;
+  font-style:italic;
+}
+
+a:hover{
+  text-decoration:underline;
+}
+
+/* Footer */
+footer{
+  margin-top:80px;
+  padding-top:24px;
+  border-top:1px solid var(--border);
+  font-family:'DM Mono', monospace;
+  font-size:11px;
+  letter-spacing:0.18em;
+  color:var(--muted);
+  text-transform:uppercase;
+}
+
+/* Small screens */
+@media (max-width:600px){
+  h1{font-size:48px;}
+}
 </style>
 </head>
+
 <body>
-  <div class="lab">CARE Lab · Emory University</div>
-  <h1>Design <em>research.</em></h1>
-  <p class="intro">Prototypes and provocations exploring care, community,
-     and health. Each artifact is a thinking-out-loud about how digital tools
-     might support — or burden — the people they're built for.</p>
 
-  <h2>Researcher artifacts</h2>
-  <p class="desc">Tools and concepts oriented toward research workflows, lab use,
-     and design provocations.</p>
-  <ul>
-    <li><a href="https://reecey22.github.io/menobots/Researcher-Artifacts/">Browse the collection →</a></li>
-  </ul>
+<div class="lab">CARE Lab · Emory University</div>
 
-  <h2>Patient artifacts</h2>
-  <p class="desc">Concepts oriented toward patients and end-users navigating
-     health, care, and daily life.</p>
-  <ul>
-    <li><a href="patient-artifacts/">Browse the collection →</a></li>
-  </ul>
+<h1>Design <em>provocations.</em></h1>
 
-  <h2>Provider artifacts</h2>
-  <p class="desc">Concepts oriented toward patients and end-users navigating
-     health, care, and daily life.</p>
-  <ul>
-    <li><a href="patient-artifacts/">Browse the collection →</a></li>
-  </ul>
+<p class="intro">
+  Prototypes and provocations exploring care for the menopause experience,
+  community, and health. Each artifact is a thinking-out-loud about how digital tools
+  might support — or burden — the people they're built for.
+</p>
 
-  <footer>CARE Lab · Emory University</footer>
+<!-- Researcher -->
+<div class="section">
+  <div class="section-header">
+    <!-- abstract "systems / research" icon -->
+    <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="#E25A75" stroke-width="1.5">
+      <circle cx="12" cy="12" r="3"/>
+      <circle cx="4" cy="12" r="2"/>
+      <circle cx="20" cy="12" r="2"/>
+      <line x1="6" y1="12" x2="9" y2="12"/>
+      <line x1="15" y1="12" x2="18" y2="12"/>
+    </svg>
+
+    <h2>Researcher artifacts</h2>
+  </div>
+
+  <p class="desc">
+    Tools and concepts oriented toward research workflows, lab use,
+    and design provocations.
+  </p>
+
+  <div class="card">
+    <a href="https://reecey22.github.io/menobots.github.io/Researcher-Artifacts/index.html">
+      Browse the collection →
+    </a>
+  </div>
+</div>
+
+<!-- Patient -->
+<div class="section">
+  <div class="section-header">
+    <!-- abstract "body / care" icon -->
+    <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="#E25A75" stroke-width="1.5">
+      <path d="M12 20c-4-3-7-6-7-10a4 4 0 0 1 7-2 4 4 0 0 1 7 2c0 4-3 7-7 10z"/>
+    </svg>
+
+    <h2>Patient artifacts</h2>
+  </div>
+
+  <p class="desc">
+    Concepts oriented toward patients and end-users navigating
+    health, care, and daily life.
+  </p>
+
+  <div class="card">
+    <a href="patient-artifacts/">
+      Browse the collection →
+    </a>
+  </div>
+</div>
+
+<footer>
+  CARE Lab · EU
+</footer>
+
 </body>
 </html>
