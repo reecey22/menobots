@@ -3,77 +3,286 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Researcher Artifacts — CARE Lab</title>
+
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;1,300;1,400&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
+
 <style>
-  body{ font-family: 'Fraunces', Georgia, serif; max-width: 720px; margin: 80px auto;
-        padding: 0 32px; color: #2D1F26; line-height: 1.6; background: #FFFFFF; }
-  .lab{ font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.22em;
-        text-transform: uppercase; color: #9B7F8A; margin-bottom: 12px; }
-  .breadcrumb{ font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.14em;
-               color: #9B7F8A; margin-bottom: 24px; }
-  .breadcrumb a{ color: #9B7F8A; text-decoration: none; }
-  .breadcrumb a:hover{ color: #E25A75; }
-  h1{ font-weight: 300; font-size: 56px; line-height: 1; letter-spacing: -0.03em;
-      margin-bottom: 16px; }
-  h1 em{ color: #E25A75; font-style: italic; }
-  .intro{ font-size: 18px; font-weight: 300; color: #5C4049; margin-bottom: 56px; }
-  .project{ padding: 24px 0; border-bottom: 1px solid rgba(45,31,38,0.1); }
-  .project h3{ font-weight: 400; font-size: 24px; margin-bottom: 6px;
-               letter-spacing: -0.01em; }
-  .project h3 em{ color: #E25A75; font-style: italic; }
-  .project p{ font-size: 14px; color: #5C4049; margin-bottom: 12px; }
-  .project a{ color: #E25A75; text-decoration: none; font-style: italic;
-              font-size: 14px; }
-  .project a:hover{ text-decoration: underline; }
-  .ver{ font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.18em;
-        color: #9B7F8A; margin-right: 12px; text-transform: uppercase; }
-  footer{ margin-top: 80px; padding-top: 24px; border-top: 1px solid rgba(45,31,38,0.1);
-          font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.18em;
-          color: #9B7F8A; text-transform: uppercase; }
+:root{
+  --ink:#2D1F26;
+  --muted:#9B7F8A;
+  --accent:#E25A75;
+  --bg:#FFFAFC;
+  --border:rgba(45,31,38,0.08);
+}
+
+body{
+  font-family:'Fraunces', Georgia, serif;
+  max-width:1000px;
+  margin:80px auto;
+  padding:0 32px;
+  color:var(--ink);
+  background:var(--bg);
+  line-height:1.6;
+}
+
+/* ambient background */
+body::before{
+  content:"";
+  position:fixed;
+  top:-150px;
+  left:-150px;
+  width:400px;
+  height:400px;
+  background:radial-gradient(circle, rgba(226,90,117,0.18), transparent 70%);
+  z-index:-1;
+}
+
+/* header */
+.breadcrumb{
+  font-family:'DM Mono', monospace;
+  font-size:11px;
+  letter-spacing:0.14em;
+  color:var(--muted);
+  margin-bottom:24px;
+}
+
+.breadcrumb a{
+  color:var(--muted);
+  text-decoration:none;
+}
+
+.breadcrumb a:hover{
+  color:var(--accent);
+}
+
+.lab{
+  font-family:'DM Mono', monospace;
+  font-size:11px;
+  letter-spacing:0.22em;
+  text-transform:uppercase;
+  color:var(--muted);
+  margin-bottom:12px;
+}
+
+h1{
+  font-weight:300;
+  font-size:56px;
+  letter-spacing:-0.03em;
+  margin-bottom:16px;
+}
+
+h1 em{
+  color:var(--accent);
+  font-style:italic;
+}
+
+.intro{
+  font-size:18px;
+  color:#5C4049;
+  margin-bottom:56px;
+}
+
+/* GRID */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(260px,1fr));
+  gap:24px;
+}
+
+/* TILE */
+.tile{
+  background:white;
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:22px;
+  position:relative;
+  overflow:hidden;
+  transition:all 0.25s ease;
+}
+
+.tile:hover{
+  transform:translateY(-6px);
+  box-shadow:0 12px 40px rgba(226,90,117,0.12);
+  border-color:rgba(226,90,117,0.25);
+}
+
+/* top graphic */
+.graphic{
+  height:90px;
+  margin-bottom:16px;
+  opacity:0.7;
+}
+
+/* title */
+.tile h3{
+  font-weight:400;
+  font-size:22px;
+  margin-bottom:6px;
+}
+
+.tile h3 em{
+  color:var(--accent);
+  font-style:italic;
+}
+
+/* desc */
+.tile p{
+  font-size:14px;
+  color:#5C4049;
+  margin-bottom:14px;
+}
+
+/* meta row */
+.meta{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.ver{
+  font-family:'DM Mono', monospace;
+  font-size:10px;
+  letter-spacing:0.18em;
+  color:var(--muted);
+  text-transform:uppercase;
+}
+
+.tile a{
+  font-size:14px;
+  color:var(--accent);
+  font-style:italic;
+  text-decoration:none;
+}
+
+.tile a:hover{
+  text-decoration:underline;
+}
+
+/* footer */
+footer{
+  margin-top:80px;
+  padding-top:24px;
+  border-top:1px solid var(--border);
+  font-family:'DM Mono', monospace;
+  font-size:11px;
+  letter-spacing:0.18em;
+  color:var(--muted);
+  text-transform:uppercase;
+}
+
 </style>
 </head>
+
 <body>
-  <div class="breadcrumb"><a href="../">← Portfolio</a></div>
-  <div class="lab">Collection · CARE Lab</div>
-  <h1>Researcher <em>artifacts.</em></h1>
-  <p class="intro">Tools, prototypes, and provocations oriented toward research
-     workflows and design exploration.</p>
 
-  <div class="project">
+<div class="breadcrumb"><a href="../">← Portfolio</a></div>
+
+<div class="lab">Collection · CARE Lab</div>
+
+<h1>Researcher <em>artifacts.</em></h1>
+
+<p class="intro">
+  Tools, prototypes, and provocations oriented toward research workflows and design exploration.
+</p>
+
+<div class="grid">
+
+  <!-- Hearth -->
+  <div class="tile">
+    <div class="graphic">
+      <!-- network / mutual aid -->
+      <svg viewBox="0 0 100 40" width="100%" height="100%">
+        <circle cx="20" cy="20" r="6" fill="#E25A75"/>
+        <circle cx="50" cy="10" r="4" fill="#F3A6B5"/>
+        <circle cx="80" cy="25" r="5" fill="#E25A75"/>
+        <line x1="20" y1="20" x2="50" y2="10" stroke="#E25A75" stroke-width="1"/>
+        <line x1="50" y1="10" x2="80" y2="25" stroke="#E25A75" stroke-width="1"/>
+      </svg>
+    </div>
+
     <h3><em>Hearth</em></h3>
-    <p>A localized mutual-aid app concept for working women — coordinating
-       caregiving, community support, and menopause symptom management.</p>
-    <span class="ver">v0.5</span>
-    <a href="https://reecey22.github.io/menobots/Researcher-Artifacts/Hearth%20by%20Manvi/v01/index.html">Open the demo →</a>
+
+    <p>
+      A mutual-aid infrastructure for working women — coordinating care, labor, and support networks through shared systems.
+    </p>
+
+    <div class="meta">
+      <span class="ver">v0.5</span>
+      <a href="https://reecey22.github.io/menobots/Researcher-Artifacts/Hearth%20by%20Manvi/v01/index.html">View →</a>
+    </div>
   </div>
 
-  <div class="project">
+  <!-- MenocareBot -->
+  <div class="tile">
+    <div class="graphic">
+      <!-- conversational / AI flow -->
+      <svg viewBox="0 0 100 40" width="100%" height="100%">
+        <rect x="10" y="10" width="30" height="20" rx="10" fill="#F3A6B5"/>
+        <rect x="50" y="10" width="30" height="20" rx="10" fill="#E25A75"/>
+        <line x1="40" y1="20" x2="50" y2="20" stroke="#E25A75"/>
+      </svg>
+    </div>
+
     <h3><em>MenocareBot</em></h3>
-    <p>A localized mutual-aid app concept for working women — coordinating
-       caregiving, community support, and menopause symptom management.</p>
-    <span class="ver">v0.5</span>
-    <a href="https://reecey22.github.io/menobots/Researcher-Artifacts/MenocareBot%20by%20Sumon/v01/index.html">Open the demo →</a>
+
+    <p>
+      A conversational system exploring how AI mediates menopause care, surfacing tensions between automation and lived experience.
+    </p>
+
+    <div class="meta">
+      <span class="ver">v0.5</span>
+      <a href="https://reecey22.github.io/menobots/Researcher-Artifacts/MenocareBot%20by%20Sumon/v01/index.html">View →</a>
+    </div>
   </div>
 
-  <div class="project">
+  <!-- Contigo -->
+  <div class="tile">
+    <div class="graphic">
+      <!-- companionship / dual form -->
+      <svg viewBox="0 0 100 40" width="100%" height="100%">
+        <ellipse cx="35" cy="20" rx="18" ry="10" fill="#F3A6B5"/>
+        <ellipse cx="60" cy="20" rx="18" ry="10" fill="#E25A75" opacity="0.7"/>
+      </svg>
+    </div>
+
     <h3><em>Contigo</em></h3>
-    <p>A localized mutual-aid app concept for working women — coordinating
-       caregiving, community support, and menopause symptom management.</p>
-    <span class="ver">v0.5</span>
-    <a href="https://reecey22.github.io/menobots/Researcher-Artifacts/Contigo%20by%20Aradhana/v01/index.html">Open the demo →</a>
+
+    <p>
+      A system imagining care as companionship — exploring emotional proximity, support, and co-presence in digital health tools.
+    </p>
+
+    <div class="meta">
+      <span class="ver">v0.5</span>
+      <a href="https://reecey22.github.io/menobots/Researcher-Artifacts/Contigo%20by%20Aradhana/v01/index.html">View →</a>
+    </div>
   </div>
 
-  <div class="project">
+  <!-- Meridian -->
+  <div class="tile">
+    <div class="graphic">
+      <!-- flow / cycles -->
+      <svg viewBox="0 0 100 40" width="100%" height="100%">
+        <path d="M0 20 Q25 5 50 20 T100 20" stroke="#E25A75" fill="none" stroke-width="2"/>
+      </svg>
+    </div>
+
     <h3><em>Meridian</em></h3>
-    <p>A localized mutual-aid app concept for working women — coordinating
-       caregiving, community support, and menopause symptom management.</p>
-    <span class="ver">v0.5</span>
-    <a href="https://reecey22.github.io/menobots/Researcher-Artifacts/Meridian%20by%20Zhu/v01/index.html">Open the demo →</a>
+
+    <p>
+      A speculative interface mapping the body as a system of flows — reframing menopause through rhythm, signal, and transition.
+    </p>
+
+    <div class="meta">
+      <span class="ver">v0.5</span>
+      <a href="https://reecey22.github.io/menobots/Researcher-Artifacts/Meridian%20by%20Zhu/v01/index.html">View →</a>
+    </div>
   </div>
 
-  <!-- Add new projects below as you ship them -->
+</div>
 
-  <footer>CARE Lab · Emory University</footer>
+<footer>CARE Lab · Emory University</footer>
+
 </body>
 </html>
